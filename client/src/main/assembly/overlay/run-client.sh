@@ -1,4 +1,4 @@
 #!/bin/bash
 
-java -cp 'lib/jars/*' "tpe2-g8.client.Client" $*
+java -cp 'lib/jars/*' "pailor.com.client.Client" $*
 

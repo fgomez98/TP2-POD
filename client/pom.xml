@@ -2,19 +2,22 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>tpe2-g8-parent</artifactId>
-    <groupId>tpe2-g8</groupId>
+    <artifactId>TP2-parent</artifactId>
+    <groupId>pailor.com</groupId>
     <version>1.0-SNAPSHOT</version>
   </parent>
-  <groupId>tpe2-g8</groupId>
-  <artifactId>tpe2-g8-client</artifactId>
+  <artifactId>TP2-client</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>tpe2-g8-client</name>
+  <name>TP2-client</name>
   <dependencies>
     <dependency>
-      <groupId>tpe2-g8</groupId>
-      <artifactId>tpe2-g8-api</artifactId>
+      <groupId>pailor.com</groupId>
+      <artifactId>TP2-api</artifactId>
       <version>1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.hazelcast</groupId>
+      <artifactId>hazelcast-all</artifactId>
     </dependency>
   </dependencies>
   <build>
