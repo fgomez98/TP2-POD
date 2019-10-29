@@ -2,6 +2,7 @@ package tp2.client;
 
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
+import com.hazelcast.config.Config;
 import com.hazelcast.core.*;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
@@ -28,8 +29,11 @@ public class Client {
     private static void movPerAirPorts() throws ExecutionException, InterruptedException {
         logger.info("movPerAirPorts...");
 
-        final ClientConfig ccfg = new ClientConfig();
-        final HazelcastInstance hz = HazelcastClient.newHazelcastClient(ccfg);
+        Config config = new Config();
+        config.getNetworkConfig().getJoin().getTcpIpConfig().addMember("localhost").setEnabled(true);
+        config.getNetworkConfig().getJoin().getTcpIpConfig().addMember("10.23.9.36").setEnabled(true);
+        config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
+        HazelcastInstance hz = Hazelcast.newHazelcastInstance(config);
         JobTracker t = hz.getJobTracker("movPerAirPorts");
 
         // cleanAll;
