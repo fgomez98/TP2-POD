@@ -1,4 +1,4 @@
-package tpe2-g8.server;
+package tpe2.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
