@@ -1,4 +1,4 @@
-package pailor.com.client;
+package tp2.client;
 
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
@@ -8,9 +8,9 @@ import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pailor.com.Mov;
-import pailor.com.TokenizerMapper;
-import pailor.com.WordCountReducerFactory;
+import tp2.api.Mov;
+import tp2.api.TokenizerMapper;
+import tp2.api.WordCountReducerFactory;
 
 import java.util.Date;
 import java.util.Map;
@@ -89,8 +89,8 @@ public class Client {
 
         Job<String, String> job = t.newJob( source );
         ICompletableFuture<Map<String, Long>> future = job
-                .mapper( new TokenizerMapper() )
-                .reducer( new WordCountReducerFactory() )
+                .mapper( new tp2.api.TokenizerMapper() )
+                .reducer( new tp2.api.WordCountReducerFactory() )
                 .submit();
 
         // Attach a callback listener

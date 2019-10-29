@@ -1,4 +1,4 @@
-package pailor.com;
+package tp2.api;
 
 import java.io.Serializable;
 import java.util.Date;

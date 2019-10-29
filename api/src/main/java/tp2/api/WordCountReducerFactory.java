@@ -1,5 +1,4 @@
-package pailor.com;
-
+package tp2.api;
 
 import com.hazelcast.mapreduce.Reducer;
 import com.hazelcast.mapreduce.ReducerFactory;

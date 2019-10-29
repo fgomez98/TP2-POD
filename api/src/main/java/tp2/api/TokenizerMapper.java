@@ -1,4 +1,4 @@
-package pailor.com;
+package tp2.api;
 
 import com.hazelcast.mapreduce.Context;
 import com.hazelcast.mapreduce.Mapper;

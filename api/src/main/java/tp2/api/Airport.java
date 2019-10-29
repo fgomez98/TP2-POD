@@ -1,3 +1,5 @@
+package tp2.api;
+
 import java.util.Objects;
 
 public class Airport {
