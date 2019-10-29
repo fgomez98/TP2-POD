@@ -13,6 +13,7 @@
     <module>client</module>
   </modules>
   <properties>
+    <opencsv.version>4.1</opencsv.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <slf4j.version>1.7.12</slf4j.version>
   </properties>
@@ -22,6 +23,11 @@
         <groupId>com.hazelcast</groupId>
         <artifactId>hazelcast-all</artifactId>
         <version>3.7.8</version>
+      </dependency>
+      <dependency>
+        <groupId>com.opencsv</groupId>
+        <artifactId>opencsv</artifactId>
+        <version>${opencsv.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.logging.log4j</groupId>
