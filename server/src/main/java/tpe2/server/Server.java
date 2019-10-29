@@ -1,6 +1,5 @@
 package tpe2.server;
 
-
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import org.slf4j.Logger;
