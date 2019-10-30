@@ -3,6 +3,8 @@ package tp2.client;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.config.Config;
+import com.hazelcast.config.JoinConfig;
+import com.hazelcast.config.NetworkConfig;
 import com.hazelcast.core.*;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
@@ -13,7 +15,9 @@ import tp2.api.Mov;
 import tp2.api.TokenizerMapper;
 import tp2.api.WordCountReducerFactory;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -23,33 +27,35 @@ public class Client {
     static private String LIST1 = "g8";
     public static void main(String[] args) throws ExecutionException, InterruptedException {
         //ex1();
-        movPerAirPorts();
+        movPerAirPorts(Arrays.asList("localhost"));
     }
 
-    private static void movPerAirPorts() throws ExecutionException, InterruptedException {
+    private static void movPerAirPorts(List<String> ips) throws ExecutionException, InterruptedException {
         logger.info("movPerAirPorts...");
 
-        Config config = new Config();
-        config.getNetworkConfig().getJoin().getTcpIpConfig().addMember("localhost").setEnabled(true);
-        config.getNetworkConfig().getJoin().getTcpIpConfig().addMember("10.23.9.36").setEnabled(true);
-        config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
-        HazelcastInstance hz = Hazelcast.newHazelcastInstance(config);
-        JobTracker t = hz.getJobTracker("movPerAirPorts");
+        Config cfg = new Config();
+        NetworkConfig network = cfg.getNetworkConfig();
+        JoinConfig join = network.getJoin();
+        join.getMulticastConfig().setEnabled(false);
+        ips.forEach(ip -> join.getTcpIpConfig().addMember(ip));
+        join.getTcpIpConfig().setEnabled(true);
+        HazelcastInstance hz = Hazelcast.newHazelcastInstance(cfg);
+        JobTracker t = hz.getJobTracker("movPerAirports");
 
         // cleanAll;
 
-        final IList<Mov> list = hz.getList(LIST1);
+        final IMap<Integer, Mov> list = hz.getMap(LIST1);
         list.clear();
 
-        list.add(new Mov(new Date("30/06/2019"),10,"Regular","Internacional","Despegue","SACO","KMIA","American Airlines","BOEING B-767"));
-        list.add(new Mov(new Date("30/06/2019"),10,"Regular","Internacional","Despegue","SACO","KMIA","American Airlines","BOEING B-767"));
-        list.add(new Mov(new Date("30/06/2019"),10,"Regular","Internacional","Despegue","SACO","KMIA","American Airlines","BOEING B-767"));
-        list.add(new Mov(new Date("30/06/2019"),10,"Regular","Internacional","Despegue","SACO","KMIA","American Airlines","BOEING B-767"));
-        list.add(new Mov(new Date("30/06/2019"),10,"Regular","Internacional","Despegue","SACO","KMIA","American Airlines","BOEING B-767"));
+        for (int i = 0; i <300000; i++) {
+            list.put(i, new Mov(new Date("30/06/2019"),i,"Regular","Internacional","Despegue","SACO","KMIA","American Airlines","BOEING B-767"));
+        }
 
-        final KeyValueSource<String, Mov> source = KeyValueSource.fromList(list);
+        Thread.sleep(10000);
 
-        Job<String, Mov> job = t.newJob( source );
+        final KeyValueSource<Integer, Mov> source = KeyValueSource.fromMap(list);
+
+        Job<Integer, Mov> job = t.newJob( source );
         ICompletableFuture<Map<String, Long>> future = job
                 .mapper( new TokenizerMapper() )
                 .reducer( new WordCountReducerFactory() )
