@@ -1,32 +1,27 @@
 package tp2.client;
 
 import ch.qos.logback.classic.Logger;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.ICompletableFuture;
-import com.hazelcast.core.IList;
+import com.hazelcast.core.*;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
-import query1.Query1Combiner;
-import query1.Query1Reducer;
-import query6.Query6Mapper;
+import tpe2.api.Combiners.SimpleChunkCombiner;
+import tpe2.api.Mappers.Query1Mapper;
+import tpe2.api.Reducers.Query1Reducer;
 import tpe2.api.Airport;
 import tpe2.api.CSVUtils;
 import tpe2.api.Flight;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
-public class ClientQuery6 {
+public class Query1 {
 
     private List<String> ips;
 
@@ -49,9 +44,6 @@ public class ClientQuery6 {
     @Option(name = "-DoutPath", aliases = "--outPath", usage = "Output path where .txt and .csv are")
     private String dout;
 
-    @Option(name = "-Dmin", aliases = "--minCount", usage = "Minimum number of shared movements to show")
-    private String dmin;
-
     public List<String> getIps() {
         return ips;
     }
@@ -64,13 +56,9 @@ public class ClientQuery6 {
         return dout;
     }
 
-    public String getDmin() {
-        return dmin;
-    }
-
     public static void main(String[] args) {
-        ClientQuery6 query = new ClientQuery6();
-        Logger logger = Helpers.createLoggerFor("Query2", query.getDout()+"/query2.txt");
+        Query1 query = new Query1();
+        Logger logger = Helpers.createLoggerFor("Query1", query.getDout()+"/query1.txt");
         try {
             CmdParserUtils.init(args, query);
         } catch (IOException e) {
@@ -91,36 +79,35 @@ public class ClientQuery6 {
             logger.info("Fin de lectura del archivo");
 
             logger.info("Inicio del trabajo map/reduce");
-            System.out.println("Provincia A;Provincia B;Movimientos");
-            query.sharedMovements(hz, airports, flights, Long.parseLong(query.getDmin())).forEach(System.out::println);
+            System.out.println("OACI;Denominación;Movimientos");
+            query.movPerAirPorts(hz, airports, flights).forEach(System.out::println);
             logger.info("Fin del trabajo map/reduce");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private List<String> sharedMovements(HazelcastInstance hz, List<Airport> airports, List<Flight> flights, Long min) throws ExecutionException, InterruptedException {
-        JobTracker t = hz.getJobTracker("sharedMovements");
+
+
+    private List<String> movPerAirPorts(HazelcastInstance hz, List<Airport> airports, List<Flight> flights) throws ExecutionException, InterruptedException {
+        JobTracker t = hz.getJobTracker("movPerAirports");
 
         // primero levantamos todos los aeropuertos que nos interesa para asegurarnos que no no haya colados
-        final Map<String, String> airportsFiltered = new HashMap<>(airports
-                .parallelStream()
+        final IMap<String, String> airportsFiltered = hz.getMap("g8-q1-airportsFiltered");
+        airportsFiltered.putAll(airports
+                .stream()
                 .filter(a -> a.getOaci() != null && !a.getOaci().equals(""))
-                .collect(Collectors.toConcurrentMap(Airport::getOaci, Airport::getProvince)));
+                .collect(Collectors.toConcurrentMap(Airport::getOaci, Airport::getDenomination)));
 
         // ahora agregamos al multimap cada movimiento desde el aeropuerto
-        final IList<Flight> flightsFiltered = hz.getList("g8-q6-flightsFiltered");
+        final IList<Flight> flightsFiltered = hz.getList("g8-q1-flightsFiltered");
         flightsFiltered.addAll(flights.parallelStream()
-                .filter(f -> !f.getFlightCLassification().equals("Internacional")
-                            && airportsFiltered.containsKey(f.getOaciOrigin())
-                                && airportsFiltered.containsKey(f.getOaciDestination())
-                        )
-                //peek() can be useful in another scenario:
-                // when we want to alter the inner state of an element.
-                .peek(f -> {
-                        f.setOaciOrigin(airportsFiltered.get(f.getOaciOrigin()));
-                        f.setOaciDestination(airportsFiltered.get(f.getOaciDestination()));
-                }).collect(Collectors.toList()));
+                // este filtro lo tengo que hacer de ante mano si o si
+                .filter(f ->
+                        (f.getTypeOfMovement().equals("Despegue") && airportsFiltered.containsKey(f.getOaciOrigin()))
+                                ||
+                                (f.getTypeOfMovement().equals("Aterrizaje") && airportsFiltered.containsKey(f.getOaciDestination()))
+                ).collect(Collectors.toList()));
 
 
         // The key returned by this KeyValueSource implementation is ALWAYS the name of the list itself,
@@ -129,18 +116,14 @@ public class ClientQuery6 {
         final KeyValueSource<String, Flight> source = KeyValueSource.fromList(flightsFiltered);
         Job<String, Flight> job = t.newJob( source );
         ICompletableFuture<Map<String, Long>> future = job
-                // por cada origen y destino del Flight emitimos un 1 apra la llame origen;destino o destino;origen según orden
-                .mapper(new Query6Mapper())
+                // no es necesario eliminar las llaves que no esté en airports.csv, pues ya fue hecho
+                // por cada origen y destino del Flight emitimos un 1
+                .mapper(new Query1Mapper())
                 // antes de emitir la llave por la red "reducimos" localmente para minimizar los datos que se envian por la red
-                .combiner(new Query1Combiner())
+                .combiner(new SimpleChunkCombiner())
                 // aeropuertos sin vuelos no llegan a persistirse
                 .reducer(new Query1Reducer())
-                // filtramos todos los que la sume de menor que min
-                .submit(iterable ->
-                    StreamSupport.stream(iterable.spliterator(), false)
-                            .filter(e -> e.getValue().compareTo(min) >= 0)
-                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
-                );
+                .submit();
 
         // Wait and retrieve the result
         Map<String, Long> result = future.get();
@@ -149,7 +132,7 @@ public class ClientQuery6 {
                 .sorted((o1, o2) -> o1.getValue().equals(o2.getValue()) ?
                         o1.getKey().compareTo(o2.getKey()):
                         o2.getValue().compareTo(o1.getValue()))
-                .map(e -> e.getKey() +";"+ e.getValue())
+                .map(e -> e.getKey() +";"+ airportsFiltered.get(e.getKey()) +";"+ e.getValue())
                 .collect(Collectors.toList());
     }
 }

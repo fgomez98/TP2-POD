@@ -2,7 +2,6 @@ package tpe2.api.query4;
 
 import com.hazelcast.mapreduce.Reducer;
 import com.hazelcast.mapreduce.ReducerFactory;
-import query1.Query1Reducer;
 
 public class Query4Reducer implements ReducerFactory<String, Long, Long> {
     @Override

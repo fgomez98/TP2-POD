@@ -7,9 +7,9 @@ import com.hazelcast.mapreduce.KeyValueSource;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
-import query1.Query1Combiner;
-import query1.Query1Mapper;
-import query1.Query1Reducer;
+import tpe2.api.Combiners.SimpleChunkCombiner;
+import tpe2.api.Mappers.Query1Mapper;
+import tpe2.api.Reducers.Query1Reducer;
 import tpe2.api.Flight;
 import tpe2.api.query3.*;
 import tpe2.api.Tuple;
@@ -71,7 +71,7 @@ public class Query3 {
         final Job<String, Flight> job = jobTracker.newJob(source);
         final ICompletableFuture<Map<String, Long>> future = job
                 .mapper(new Query1Mapper())
-                .combiner(new Query1Combiner())
+                .combiner(new SimpleChunkCombiner())
                 .reducer(new Query1Reducer())
                 .submit();
 

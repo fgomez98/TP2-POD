@@ -6,7 +6,7 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 import tpe2.api.CSVUtils;
 import tpe2.api.Collators.Query2Collator;
-import tpe2.api.Combiners.Query2CombinerFactory;
+import tpe2.api.Combiners.SimpleChunkCombiner;
 import tpe2.api.Flight;
 import tpe2.api.Mappers.Query2Mapper;
 import tpe2.api.Reducers.Query2ReducerFactory;
@@ -103,7 +103,7 @@ public class Query2 {
 
         ICompletableFuture<List<Tuple<String, Double>>> future = job
                 .mapper(new Query2Mapper())
-                .combiner(new Query2CombinerFactory())
+                .combiner(new SimpleChunkCombiner())
                 .reducer(new Query2ReducerFactory())
                 .submit(new Query2Collator(query2.getN()));
 
