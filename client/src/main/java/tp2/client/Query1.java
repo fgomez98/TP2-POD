@@ -1,6 +1,10 @@
 package tp2.client;
 
 import ch.qos.logback.classic.Logger;
+import com.hazelcast.client.HazelcastClient;
+import com.hazelcast.client.config.ClientConfig;
+import com.hazelcast.client.config.ClientNetworkConfig;
+import com.hazelcast.config.*;
 import com.hazelcast.core.*;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
@@ -19,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class Query1 {
@@ -71,7 +76,15 @@ public class Query1 {
         }
 
         try {
-            HazelcastInstance hz = Hazelcast.newHazelcastInstance();
+            ClientConfig cfg = new ClientConfig();
+            GroupConfig groupConfig = cfg.getGroupConfig();
+            groupConfig.setName("tpe2-g8");
+            groupConfig.setPassword("holamundo");
+            ClientNetworkConfig clientNetworkConfig = cfg.getNetworkConfig();
+            query.getIps().forEach(clientNetworkConfig::addAddress);
+
+            HazelcastInstance hz = HazelcastClient.newHazelcastClient(cfg);
+            System.out.println("Members: "+hz.getCluster().getMembers());
 
             logger.info("Inicio de la lectura del archivo");
             List<Airport> airports = CSVUtils.CSVReadAirports("/Users/pilo/development/itba/pod/TP2-POD/server/src/main/resources/aeropuertos.csv");
@@ -92,7 +105,13 @@ public class Query1 {
     private List<String> movPerAirPorts(HazelcastInstance hz, List<Airport> airports, List<Flight> flights) throws ExecutionException, InterruptedException {
         JobTracker t = hz.getJobTracker("movPerAirports");
 
-        // primero levantamos todos los aeropuertos que nos interesa para asegurarnos que no no haya colados
+        final IMap<String, String> airportsFiltered = hz.getMap("test");
+        airportsFiltered.put("a", "1");
+        airportsFiltered.put("b", "2");
+        airportsFiltered.put("c", "3");
+        TimeUnit.SECONDS.sleep(10);
+        return null;
+        /*// primero levantamos todos los aeropuertos que nos interesa para asegurarnos que no no haya colados
         final IMap<String, String> airportsFiltered = hz.getMap("g8-q1-airportsFiltered");
         airportsFiltered.putAll(airports
                 .stream()
@@ -133,6 +152,6 @@ public class Query1 {
                         o1.getKey().compareTo(o2.getKey()):
                         o2.getValue().compareTo(o1.getValue()))
                 .map(e -> e.getKey() +";"+ airportsFiltered.get(e.getKey()) +";"+ e.getValue())
-                .collect(Collectors.toList());
+                .collect(Collectors.toList());*/
     }
 }
