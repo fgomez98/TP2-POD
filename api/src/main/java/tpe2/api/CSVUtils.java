@@ -1,8 +1,6 @@
 package tpe2.api;
 
-import com.opencsv.bean.ColumnPositionMappingStrategy;
-import com.opencsv.bean.CsvToBean;
-import com.opencsv.bean.CsvToBeanBuilder;
+import com.opencsv.bean.*;
 
 import java.io.Reader;
 import java.nio.file.Files;
@@ -18,7 +16,8 @@ public class CSVUtils {
 
         Reader reader = Files.newBufferedReader(path);
 
-        CsvToBean cb = new CsvToBeanBuilder(reader)
+        CsvToBean cb = new CsvToBeanBuilder<>(reader)
+                .withSkipLines(1) // no leo los headers
                 .withType(clazz)
                 .withMappingStrategy(ms)
                 .withSeparator(';')
@@ -28,7 +27,6 @@ public class CSVUtils {
         reader.close();
         return beanList;
     }
-
     public static void main(String[] args) {
         try {
             List<Airport> airports = CSVRead(Paths.get("/Users/fermingomez/Desktop/aeropuertos.csv"), Airport.class);

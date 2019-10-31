@@ -2,7 +2,9 @@ package tpe2.api;
 
 import com.opencsv.bean.CsvBindByPosition;
 
-public class Flight {
+import java.io.Serializable;
+
+public class Flight implements Serializable {
 
     @CsvBindByPosition(position = 2)
     private String flightClass;

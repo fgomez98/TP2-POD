@@ -1,4 +1,4 @@
-package tpe2.api.Query3;
+package tpe2.api.query3;
 
 import com.hazelcast.mapreduce.Combiner;
 import com.hazelcast.mapreduce.CombinerFactory;
@@ -12,7 +12,7 @@ public class MovementCountCombinerFactory implements CombinerFactory<String, Lon
 
     private class MovementCountCombiner extends Combiner<Long, Long> {
 
-        private long count;
+        private volatile long count;
 
         @Override
         public void reset() {

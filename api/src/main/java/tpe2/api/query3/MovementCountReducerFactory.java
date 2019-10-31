@@ -1,4 +1,4 @@
-package tpe2.api.Query3;
+package tpe2.api.query3;
 
 import com.hazelcast.mapreduce.Reducer;
 import com.hazelcast.mapreduce.ReducerFactory;
@@ -12,7 +12,7 @@ public class MovementCountReducerFactory implements ReducerFactory<String, Long,
 
     private class Q3Reducer extends Reducer<Long, Long> {
 
-        private long count;
+        private volatile long count;
 
         @Override
         public void beginReduce () {

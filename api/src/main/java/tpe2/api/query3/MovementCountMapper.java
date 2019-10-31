@@ -1,14 +1,14 @@
-package tpe2.api.Query3;
+package tpe2.api.query3;
 
 import com.hazelcast.mapreduce.Context;
 import com.hazelcast.mapreduce.Mapper;
 import tpe2.api.Flight;
 
-public class MovementCountMapper implements Mapper<String, Flight, String, Long> {
+public class MovementCountMapper implements Mapper<Integer, Flight, String, Long> {
     private static final Long ONE = 1L;
 
     @Override
-    public void map(String s, Flight flight, Context<String, Long> context) {
+    public void map(Integer i, Flight flight, Context<String, Long> context) {
         // se contabilizan movimientos como despegues que tengan al aeropuerto como origen y aterrizajes que tengan al aeropuerto como destino.
         switch (flight.getTypeOfMovement()) {
             case "Despegue":
