@@ -23,7 +23,7 @@ public class CSVUtils {
         String [] nextLine = reader.readNext(); // salteamos al priemra
         List<Flight> resp = new ArrayList<>();
         while ((nextLine = reader.readNext()) != null) {
-            resp.add(new Flight(nextLine[2], nextLine[3], nextLine[4], nextLine[5], nextLine[6]));
+            resp.add(new Flight(nextLine[2], nextLine[3], nextLine[4], nextLine[5], nextLine[6], nextLine[7]));
         }
         return resp;
     }

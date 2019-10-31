@@ -19,16 +19,19 @@ public class Flight implements DataSerializable {
     private String oaciOrigin;
     @CsvBindByPosition(position = 6)
     private String oaciDestination;
+    @CsvBindByPosition(position = 7)
+    private String airline;
 
     public Flight() {
     }
 
-    public Flight(String flightClass, String flightCLassification, String typeOfMovement, String oaciOrigin, String oaciDestination) {
+    public Flight(String flightClass, String flightCLassification, String typeOfMovement, String oaciOrigin, String oaciDestination, String airline) {
         this.flightClass = flightClass;
         this.flightCLassification = flightCLassification;
         this.typeOfMovement = typeOfMovement;
         this.oaciOrigin = oaciOrigin;
         this.oaciDestination = oaciDestination;
+        this.airline = airline;
     }
 
     public String getFlightClass() {
@@ -71,6 +74,14 @@ public class Flight implements DataSerializable {
         this.oaciDestination = oaciDestination;
     }
 
+    public String getAirline() {
+        return airline;
+    }
+
+    public void setAirline(String airline) {
+        this.airline = airline;
+    }
+
     // NO CAMBIAR EL ORDEN, DEBEN COINCIDIR EN READ Y WRITE
     @Override
     public void writeData(ObjectDataOutput out) throws IOException {
@@ -79,6 +90,7 @@ public class Flight implements DataSerializable {
         out.writeUTF(typeOfMovement);
         out.writeUTF(oaciOrigin);
         out.writeUTF(oaciDestination);
+        out.writeUTF(airline);
     }
 
     // NO CAMBIAR EL ORDEN, DEBEN COINCIDIR EN READ Y WRITE
@@ -89,6 +101,7 @@ public class Flight implements DataSerializable {
         typeOfMovement = in.readUTF();
         oaciOrigin = in.readUTF();
         oaciDestination = in.readUTF();
+        airline = in.readUTF();
     }
 
     @Override
@@ -99,6 +112,7 @@ public class Flight implements DataSerializable {
                 ", typeOfMovement='" + typeOfMovement + '\'' +
                 ", oaciOrigin='" + oaciOrigin + '\'' +
                 ", oaciDestination='" + oaciDestination + '\'' +
+                ", airline='" + airline + '\'' +
                 '}';
     }
 }

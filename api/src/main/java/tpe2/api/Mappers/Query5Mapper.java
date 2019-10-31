@@ -2,7 +2,7 @@ package tpe2.api.query5;
 
 import com.hazelcast.mapreduce.Context;
 import com.hazelcast.mapreduce.Mapper;
-import tpe2.api.Flight;
+import tpe2.api.Model.Flight;
 
 public class Q5Mapper implements Mapper<String, Flight, String, Long> {
 
@@ -14,7 +14,7 @@ public class Q5Mapper implements Mapper<String, Flight, String, Long> {
      */
     @Override
     public void map(String key, Flight flight, Context<String, Long> context) {
-        switch (flight.getFlightClass()) {
+        switch (flight.getTypeOfMovement()) {
             case "Despegue":
                 if (isPrivate(flight.getFlightClass())) {
                     context.emit(flight.getOaciOrigin(), PRIVATE);
@@ -33,10 +33,7 @@ public class Q5Mapper implements Mapper<String, Flight, String, Long> {
     }
 
     private boolean isPrivate(String flightClass) {
-        if (flightClass.compareTo("Vuelo Privado con Matrícula Nacional") == 0 ||
-                flightClass.compareTo("Vuelo Privado con Matrícula Extranjera") == 0) {
-            return true;
-        }
-        return false;
+        return flightClass.compareTo("Vuelo Privado con Matrícula Nacional") == 0 ||
+                flightClass.compareTo("Vuelo Privado con Matrícula Extranjera") == 0;
     }
 }

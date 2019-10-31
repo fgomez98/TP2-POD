@@ -2,7 +2,7 @@ package tpe2.api.query5;
 
 import com.hazelcast.mapreduce.Reducer;
 import com.hazelcast.mapreduce.ReducerFactory;
-import tpe2.api.Tuple;
+import tpe2.api.Model.Tuple;
 
 
 public class Q5ReducerFactory implements ReducerFactory<String, Tuple<Long, Long>, Tuple<Long, Long>> {

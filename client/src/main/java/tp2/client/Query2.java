@@ -1,11 +1,22 @@
 package tp2.client;
 
+import com.hazelcast.core.*;
+import com.hazelcast.mapreduce.*;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
+import tpe2.api.CSVUtils;
+import tpe2.api.Collators.Query2Collator;
+import tpe2.api.Combiners.SimpleChunkCombiner;
+import tpe2.api.Flight;
+import tpe2.api.Mappers.Query2Mapper;
+import tpe2.api.Reducers.Query2ReducerFactory;
+import tpe2.api.Tuple;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.text.DecimalFormat;
+import java.util.*;
 
 public class Query2 {
 
@@ -15,7 +26,7 @@ public class Query2 {
     private List<String> ips;
 
     @Option(name = "-Daddresses", aliases = "--ipAddresses",
-            usage = "one or more ip directions and ports", required = true)
+            usage = "one or more ip directions and ports"/*, required = true*/)
     private void setIps(String s) throws CmdLineException {
         List<String> list = Arrays.asList(s.split(";"));
         for (String ip : list) {
@@ -61,6 +72,7 @@ public class Query2 {
         this.output = output;
     }
 
+
     public static void main(String[] args) {
         Query2 query2 = new Query2();
         try {
@@ -70,9 +82,50 @@ public class Query2 {
             System.exit(1);
         }
 
-        for (String ip : query2.getIps()) {
-            System.out.println(ip);
+        List<Flight> flightList = new ArrayList<>();
+        try {
+            flightList = CSVUtils.CSVReadFlights(query2.getDir() + "movimientos.csv");
+        } catch (Exception e) {
+            System.out.println("There was a problem reading the csv files");
+            System.exit(1);
         }
+
+        final HazelcastInstance hazel = Hazelcast.newHazelcastInstance();
+
+
+        JobTracker jobTracker = hazel.getJobTracker("top-" + query2.getN() + "-airlines");
+
+        IList<Flight> iList = hazel.getList("top-airlines");
+        iList.clear();
+        iList.addAll(flightList);
+
+        Job<String, Flight> job = jobTracker.newJob(KeyValueSource.fromList(iList));
+
+        ICompletableFuture<List<Tuple<String, Double>>> future = job
+                .mapper(new Query2Mapper())
+                .combiner(new SimpleChunkCombiner())
+                .reducer(new Query2ReducerFactory())
+                .submit(new Query2Collator(query2.getN()));
+
+        try {
+            List<Tuple<String, Double>> result = future.get();
+
+
+            List<String> list = new ArrayList<>();
+            list.add("Aerolinea;Porcentaje\n");
+            result.forEach((k) -> {
+                        DecimalFormat numberFormat = new DecimalFormat("#.00");
+                        list.add(k.getaVal() + ";" + numberFormat.format(k.getbVal()) + "%\n");
+                    });
+            Files.write(Paths.get(query2.getOutput()), list);
+
+            System.out.println("done");
+        } catch (Exception e) {
+            System.out.println("Error calculating results");
+            System.exit(1);
+        }
+
+
     }
 
 

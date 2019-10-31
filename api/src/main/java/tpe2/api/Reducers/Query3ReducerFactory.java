@@ -2,7 +2,7 @@ package tpe2.api.query3;
 
 import com.hazelcast.mapreduce.Reducer;
 import com.hazelcast.mapreduce.ReducerFactory;
-import tpe2.api.Tuple;
+import tpe2.api.Model.Tuple;
 
 import java.util.ArrayList;
 import java.util.List;

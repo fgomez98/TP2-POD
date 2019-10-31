@@ -1,3 +1,0 @@
-2019-10-30 23:50:35,485 INFO  Client:77 - Inicio de la lectura del archivo
-2019-10-30 23:50:35,913 INFO  Client:80 - Fin de lectura del archivo
-2019-10-30 23:50:38,535 INFO  Client:85 - Fin del trabajo map/reduce
