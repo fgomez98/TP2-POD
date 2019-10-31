@@ -10,6 +10,7 @@ import tpe2.api.Combiners.Query2CombinerFactory;
 import tpe2.api.Flight;
 import tpe2.api.Mappers.Query2Mapper;
 import tpe2.api.Reducers.Query2ReducerFactory;
+import tpe2.api.Tuple;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -100,21 +101,21 @@ public class Query2 {
 
         Job<String, Flight> job = jobTracker.newJob(KeyValueSource.fromList(iList));
 
-        ICompletableFuture<Set<Map.Entry<String, Double>>> future = job
+        ICompletableFuture<List<Tuple<String, Double>>> future = job
                 .mapper(new Query2Mapper())
                 .combiner(new Query2CombinerFactory())
                 .reducer(new Query2ReducerFactory())
                 .submit(new Query2Collator(query2.getN()));
 
         try {
-            Set<Map.Entry<String, Double>> result = future.get();
+            List<Tuple<String, Double>> result = future.get();
 
 
             List<String> list = new ArrayList<>();
             list.add("Aerolinea;Porcentaje\n");
             result.forEach((k) -> {
                         DecimalFormat numberFormat = new DecimalFormat("#.00");
-                        list.add(k.getKey() + ";" + numberFormat.format(k.getValue()) + "%\n");
+                        list.add(k.getaVal() + ";" + numberFormat.format(k.getbVal()) + "%\n");
                     });
             Files.write(Paths.get(query2.getOutput()), list);
 
