@@ -12,7 +12,11 @@ import tpe2.api.Combiners.Query4CombinerFactory;
 import tpe2.api.Mappers.Query4Mapper;
 import tpe2.api.Reducers.Query4ReducerFactory;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -91,7 +95,22 @@ public class Query4 {
         movementsIMap.clear();
         movementsMap.forEach(movementsIMap::set);
 
+        try (PrintWriter writer = new PrintWriter(new File(query.output + "/query4.csv"))) {
+            StringBuilder sb = new StringBuilder();
+            Iterator it = movementsMap.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry pair = (Map.Entry)it.next();
+                sb.append(pair.getKey());
+                sb.append(";");
+                sb.append(pair.getValue());
+                sb.append('\n');
+                it.remove(); // avoids a ConcurrentModificationException
+            }
+            writer.write(sb.toString());
+        } catch (FileNotFoundException e) {
+            System.out.println(e.getMessage());
+        }
 
-        System.out.println(movementsMap);
+        System.out.println("Done");
     }
 }
