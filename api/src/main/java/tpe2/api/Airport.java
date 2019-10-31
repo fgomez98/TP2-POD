@@ -1,10 +1,14 @@
 package tpe2.api;
 
+import com.hazelcast.nio.ObjectDataInput;
+import com.hazelcast.nio.ObjectDataOutput;
+import com.hazelcast.nio.serialization.DataSerializable;
 import com.opencsv.bean.CsvBindByPosition;
 
+import java.io.IOException;
 import java.io.Serializable;
 
-public class Airport implements Serializable {
+public class Airport implements DataSerializable {
 
     @CsvBindByPosition(position = 1)
     private String oaci;
@@ -41,6 +45,22 @@ public class Airport implements Serializable {
 
     public void setProvince(String province) {
         this.province = province;
+    }
+
+    // NO CAMBIAR EL ORDEN, DEBEN COINCIDIR EN READ Y WRITE
+    @Override
+    public void writeData(ObjectDataOutput out) throws IOException {
+        out.writeUTF(oaci);
+        out.writeUTF(denomination);
+        out.writeUTF(province);
+    }
+
+    // NO CAMBIAR EL ORDEN, DEBEN COINCIDIR EN READ Y WRITE
+    @Override
+    public void readData(ObjectDataInput in) throws IOException {
+        oaci = in.readUTF();
+        denomination = in.readUTF();
+        province = in.readUTF();
     }
 
     @Override
