@@ -1,11 +1,11 @@
-package tpe2.api.query5;
+package tpe2.api.Reducers;
 
 import com.hazelcast.mapreduce.Reducer;
 import com.hazelcast.mapreduce.ReducerFactory;
 import tpe2.api.Model.Tuple;
 
 
-public class Q5ReducerFactory implements ReducerFactory<String, Tuple<Long, Long>, Tuple<Long, Long>> {
+public class Query5ReducerFactory implements ReducerFactory<String, Tuple<Long, Long>, Tuple<Long, Long>> {
 
     @Override
     public Reducer<Tuple<Long, Long>, Tuple<Long, Long>> newReducer(String s) {

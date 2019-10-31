@@ -1,4 +1,4 @@
-package tpe2.api.query5;
+package tpe2.api.Collators;
 
 import com.hazelcast.mapreduce.Collator;
 import tpe2.api.Model.Tuple;
@@ -10,12 +10,12 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-public class Q5Collator implements Collator<Map.Entry<String, Tuple<Long, Long>>, List<Tuple<String, Double>>> {
+public class Query5Collator implements Collator<Map.Entry<String, Tuple<Long, Long>>, List<Tuple<String, Double>>> {
 
     private int n;
     private List<String> oacis;
 
-    public Q5Collator(List<String> oacis, int n) {
+    public Query5Collator(List<String> oacis, int n) {
         this.n = n;
         this.oacis = oacis;
     }

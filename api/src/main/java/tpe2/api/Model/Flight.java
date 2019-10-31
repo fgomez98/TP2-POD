@@ -1,4 +1,4 @@
-package tpe2.api;
+package tpe2.api.Model;
 
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;

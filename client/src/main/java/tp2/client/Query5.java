@@ -6,14 +6,14 @@ import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
-import tpe2.api.Airport;
+import tpe2.api.Model.Airport;
 import tpe2.api.CSVUtils;
-import tpe2.api.Flight;
-import tpe2.api.Tuple;
-import tpe2.api.query5.Q5Collator;
-import tpe2.api.query5.Q5CombinerFactory;
-import tpe2.api.query5.Q5Mapper;
-import tpe2.api.query5.Q5ReducerFactory;
+import tpe2.api.Model.Flight;
+import tpe2.api.Model.Tuple;
+import tpe2.api.Collators.Query5Collator;
+import tpe2.api.Combiners.Query5CombinerFactory;
+import tpe2.api.Mappers.Query5Mapper;
+import tpe2.api.Reducers.Query5ReducerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -126,10 +126,10 @@ public class Query5 {
 
         final Job<String, Flight> job = jobTracker.newJob(movementSource);
         final ICompletableFuture<List<Tuple<String, Double>>> future = job
-                .mapper(new Q5Mapper())
-                .combiner(new Q5CombinerFactory())
-                .reducer(new Q5ReducerFactory())
-                .submit(new Q5Collator(oacis,query5.getN()));
+                .mapper(new Query5Mapper())
+                .combiner(new Query5CombinerFactory())
+                .reducer(new Query5ReducerFactory())
+                .submit(new Query5Collator(oacis,query5.getN()));
 
         List<Tuple<String, Double>> movementsMap = future.get();
 

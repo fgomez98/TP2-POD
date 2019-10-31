@@ -1,9 +1,9 @@
-package tpe2.api.query4;
+package tpe2.api.Combiners;
 
 import com.hazelcast.mapreduce.Combiner;
 import com.hazelcast.mapreduce.CombinerFactory;
 
-public class Query4Combiner implements CombinerFactory<String, Long, Long> {
+public class Query4CombinerFactory implements CombinerFactory<String, Long, Long> {
     @Override
     public Combiner<Long, Long> newCombiner(String key ) {
             return new FlightCountCombiner();

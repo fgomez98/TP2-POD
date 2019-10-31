@@ -1,4 +1,4 @@
-package tpe2.api.query3;
+package tpe2.api.Reducers;
 
 import com.hazelcast.mapreduce.Reducer;
 import com.hazelcast.mapreduce.ReducerFactory;
@@ -7,7 +7,7 @@ import tpe2.api.Model.Tuple;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Q3ReducerFactory implements ReducerFactory<Long, String, List<Tuple<String, String>>> {
+public class Query3ReducerFactory implements ReducerFactory<Long, String, List<Tuple<String, String>>> {
 
     @Override
     public Reducer<String, List<Tuple<String, String>>> newReducer(Long aLong) {

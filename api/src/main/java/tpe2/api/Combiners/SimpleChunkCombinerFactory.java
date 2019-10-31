@@ -3,7 +3,7 @@ package tpe2.api.Combiners;
 import com.hazelcast.mapreduce.Combiner;
 import com.hazelcast.mapreduce.CombinerFactory;
 
-public class SimpleChunkCombiner implements CombinerFactory<String, Long, Long> {
+public class SimpleChunkCombinerFactory implements CombinerFactory<String, Long, Long> {
     @Override
     public Combiner<Long, Long> newCombiner(String s) {
         return new Query2Combiner();

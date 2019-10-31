@@ -1,4 +1,4 @@
-package tpe2.api.query4;
+package tpe2.api.Collators;
 
 import com.hazelcast.mapreduce.Collator;
 

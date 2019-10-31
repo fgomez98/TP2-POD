@@ -6,11 +6,11 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 import tpe2.api.CSVUtils;
 import tpe2.api.Collators.Query2Collator;
-import tpe2.api.Combiners.SimpleChunkCombiner;
-import tpe2.api.Flight;
+import tpe2.api.Combiners.SimpleChunkCombinerFactory;
+import tpe2.api.Model.Flight;
 import tpe2.api.Mappers.Query2Mapper;
 import tpe2.api.Reducers.Query2ReducerFactory;
-import tpe2.api.Tuple;
+import tpe2.api.Model.Tuple;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,20 +23,19 @@ public class Query2 {
     @Option(name = "-Dn", aliases = "--n", usage = "number of top airlines", required = true)
     private int n;
 
-    private List<String> ips;
+    private String[] ips;
 
     @Option(name = "-Daddresses", aliases = "--ipAddresses",
             usage = "one or more ip directions and ports"/*, required = true*/)
+
     private void setIps(String s) throws CmdLineException {
-        List<String> list = Arrays.asList(s.split(";"));
-        for (String ip : list) {
+        ips = s.split(";");
+        for (String ip : ips) {
             if (!ip.matches("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}):(\\d{1,5})")) {
                 throw new CmdLineException("Invalid ip and port address");
             }
         }
-        this.ips = list;
     }
-
 
     @Option(name = "-DinPath", aliases = "--inPath", usage = "input directory path", required = true)
     private String dir;
@@ -52,7 +51,7 @@ public class Query2 {
         this.n = n;
     }
 
-    public List<String> getIps() {
+    public String[] getIps() {
         return ips;
     }
 
@@ -103,7 +102,7 @@ public class Query2 {
 
         ICompletableFuture<List<Tuple<String, Double>>> future = job
                 .mapper(new Query2Mapper())
-                .combiner(new SimpleChunkCombiner())
+                .combiner(new SimpleChunkCombinerFactory())
                 .reducer(new Query2ReducerFactory())
                 .submit(new Query2Collator(query2.getN()));
 

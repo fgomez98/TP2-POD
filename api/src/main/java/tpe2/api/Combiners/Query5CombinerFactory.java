@@ -1,11 +1,11 @@
-package tpe2.api.query5;
+package tpe2.api.Combiners;
 
 
 import com.hazelcast.mapreduce.Combiner;
 import com.hazelcast.mapreduce.CombinerFactory;
 import tpe2.api.Model.Tuple;
 
-public class Q5CombinerFactory implements CombinerFactory<String, Long, Tuple<Long, Long>> {
+public class Query5CombinerFactory implements CombinerFactory<String, Long, Tuple<Long, Long>> {
 
     @Override
     public Combiner<Long, Tuple<Long, Long>> newCombiner(String s) {

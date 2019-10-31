@@ -1,12 +1,12 @@
-package tpe2.api.query4;
+package tpe2.api.Reducers;
 
 import com.hazelcast.mapreduce.Reducer;
 import com.hazelcast.mapreduce.ReducerFactory;
 
-public class Query4Reducer implements ReducerFactory<String, Long, Long> {
+public class Query4ReducerFactory implements ReducerFactory<String, Long, Long> {
     @Override
     public Reducer<Long, Long> newReducer(String key ) {
-        return new Query4Reducer.FlightsCounter();
+        return new Query4ReducerFactory.FlightsCounter();
     }
     private class FlightsCounter extends Reducer<Long, Long> {
         private volatile long sum;

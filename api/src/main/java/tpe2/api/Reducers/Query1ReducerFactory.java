@@ -3,21 +3,25 @@ package tpe2.api.Reducers;
 import com.hazelcast.mapreduce.Reducer;
 import com.hazelcast.mapreduce.ReducerFactory;
 
-public class Query1Reducer implements ReducerFactory<String, Long, Long> {
+public class Query1ReducerFactory implements ReducerFactory<String, Long, Long> {
     @Override
-    public Reducer<Long, Long> newReducer(String key ) {
+    public Reducer<Long, Long> newReducer(String key) {
         return new FlightsCounter();
     }
+
     private class FlightsCounter extends Reducer<Long, Long> {
         private volatile long sum;
+
         @Override
-        public void beginReduce () {
+        public void beginReduce() {
             sum = 0;
         }
+
         @Override
-        public void reduce( Long value ) {
+        public void reduce(Long value) {
             sum += value.longValue();
         }
+
         @Override
         public Long finalizeReduce() {
             return sum;

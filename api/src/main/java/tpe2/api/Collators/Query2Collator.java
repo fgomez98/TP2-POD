@@ -2,7 +2,7 @@ package tpe2.api.Collators;
 
 
 import com.hazelcast.mapreduce.Collator;
-import tpe2.api.Tuple;
+import tpe2.api.Model.Tuple;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;

@@ -7,12 +7,14 @@ import com.hazelcast.mapreduce.KeyValueSource;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
-import tpe2.api.Combiners.SimpleChunkCombiner;
+import tpe2.api.Collators.Query3Collator;
+import tpe2.api.Combiners.SimpleChunkCombinerFactory;
+import tpe2.api.Mappers.Query3Mapper;
 import tpe2.api.Mappers.Query1Mapper;
-import tpe2.api.Reducers.Query1Reducer;
-import tpe2.api.Flight;
-import tpe2.api.query3.*;
-import tpe2.api.Tuple;
+import tpe2.api.Reducers.Query3ReducerFactory;
+import tpe2.api.Reducers.Query1ReducerFactory;
+import tpe2.api.Model.Flight;
+import tpe2.api.Model.Tuple;
 
 import java.util.List;
 import java.util.Map;
@@ -71,8 +73,8 @@ public class Query3 {
         final Job<String, Flight> job = jobTracker.newJob(source);
         final ICompletableFuture<Map<String, Long>> future = job
                 .mapper(new Query1Mapper())
-                .combiner(new SimpleChunkCombiner())
-                .reducer(new Query1Reducer())
+                .combiner(new SimpleChunkCombinerFactory())
+                .reducer(new Query1ReducerFactory())
                 .submit();
 
         Map<String, Long> movementsMap = future.get();
@@ -84,10 +86,10 @@ public class Query3 {
         final KeyValueSource<String, Long> source2 = KeyValueSource.fromMap(movementsIMap);
         final Job<String, Long> job2 = jobTracker.newJob(source2);
         final ICompletableFuture<List<Map.Entry<Long, List<Tuple<String, String>>>>> future2 = job2
-                .mapper(new Q3Mapper())
+                .mapper(new Query3Mapper())
                 // vale la pena meter un combiner que vaya metiedo agregando los valores en una lista??
-                .reducer(new Q3ReducerFactory())
-                .submit(new Q3Collator());
+                .reducer(new Query3ReducerFactory())
+                .submit(new Query3Collator());
 
         List<Map.Entry<Long, List<Tuple<String, String>>>> result = future2.get();
 

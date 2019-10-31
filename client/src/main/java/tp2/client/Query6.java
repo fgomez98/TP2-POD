@@ -10,12 +10,12 @@ import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
-import tpe2.api.Combiners.SimpleChunkCombiner;
-import tpe2.api.Reducers.Query1Reducer;
+import tpe2.api.Combiners.SimpleChunkCombinerFactory;
+import tpe2.api.Reducers.Query1ReducerFactory;
 import tpe2.api.Mappers.Query6Mapper;
-import tpe2.api.Airport;
+import tpe2.api.Model.Airport;
 import tpe2.api.CSVUtils;
-import tpe2.api.Flight;
+import tpe2.api.Model.Flight;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -132,9 +132,9 @@ public class Query6 {
                 // por cada origen y destino del Flight emitimos un 1 apra la llame origen;destino o destino;origen según orden
                 .mapper(new Query6Mapper())
                 // antes de emitir la llave por la red "reducimos" localmente para minimizar los datos que se envian por la red
-                .combiner(new SimpleChunkCombiner())
+                .combiner(new SimpleChunkCombinerFactory())
                 // aeropuertos sin vuelos no llegan a persistirse
-                .reducer(new Query1Reducer())
+                .reducer(new Query1ReducerFactory())
                 // filtramos todos los que la sume de menor que min
                 .submit(iterable ->
                     StreamSupport.stream(iterable.spliterator(), false)

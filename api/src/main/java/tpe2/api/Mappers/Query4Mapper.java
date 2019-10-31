@@ -1,4 +1,4 @@
-package tpe2.api.query4;
+package tpe2.api.Mappers;
 
 import com.hazelcast.mapreduce.Context;
 import com.hazelcast.mapreduce.Mapper;

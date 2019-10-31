@@ -1,10 +1,10 @@
-package tpe2.api.query5;
+package tpe2.api.Mappers;
 
 import com.hazelcast.mapreduce.Context;
 import com.hazelcast.mapreduce.Mapper;
 import tpe2.api.Model.Flight;
 
-public class Q5Mapper implements Mapper<String, Flight, String, Long> {
+public class Query5Mapper implements Mapper<String, Flight, String, Long> {
 
     private static final Long PRIVATE = 1L;
     private static final Long NON_PRIVATE = 0L;

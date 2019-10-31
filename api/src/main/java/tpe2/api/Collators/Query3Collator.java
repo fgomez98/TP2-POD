@@ -1,11 +1,11 @@
-package tpe2.api.query3;
+package tpe2.api.Collators;
 
 import com.hazelcast.mapreduce.Collator;
 import tpe2.api.Model.Tuple;
 
 import java.util.*;
 
-public class Q3Collator implements Collator<Map.Entry<Long, List<Tuple<String, String>>>, List<Map.Entry<Long, List<Tuple<String, String>>>>> {
+public class Query3Collator implements Collator<Map.Entry<Long, List<Tuple<String, String>>>, List<Map.Entry<Long, List<Tuple<String, String>>>>> {
 
     @Override
     public List<Map.Entry<Long, List<Tuple<String, String>>>> collate(Iterable<Map.Entry<Long, List<Tuple<String, String>>>> iterable) {

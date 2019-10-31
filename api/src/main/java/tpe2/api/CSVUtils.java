@@ -1,6 +1,8 @@
 package tpe2.api;
 
 import com.opencsv.CSVReader;
+import tpe2.api.Model.Airport;
+import tpe2.api.Model.Flight;
 
 import java.io.FileReader;
 import java.util.ArrayList;

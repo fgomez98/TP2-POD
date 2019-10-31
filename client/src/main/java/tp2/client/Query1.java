@@ -11,19 +11,18 @@ import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
-import tpe2.api.Combiners.SimpleChunkCombiner;
+import tpe2.api.Combiners.SimpleChunkCombinerFactory;
 import tpe2.api.Mappers.Query1Mapper;
-import tpe2.api.Reducers.Query1Reducer;
-import tpe2.api.Airport;
+import tpe2.api.Reducers.Query1ReducerFactory;
+import tpe2.api.Model.Airport;
 import tpe2.api.CSVUtils;
-import tpe2.api.Flight;
+import tpe2.api.Model.Flight;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class Query1 {
@@ -32,6 +31,7 @@ public class Query1 {
 
     @Option(name = "-Daddresses", aliases = "--ipAddresses",
             usage = "one or more ip directions and ports", required = true)
+
     private void setIps(String s) throws CmdLineException {
         List<String> list = Arrays.asList(s.split(";"));
         for (String ip : list) {
@@ -41,7 +41,6 @@ public class Query1 {
         }
         this.ips = list;
     }
-
 
     @Option(name = "-DinPath", aliases = "--inPath", usage = "input directory path", required = true)
     private String din;
@@ -132,9 +131,9 @@ public class Query1 {
                 // por cada origen y destino del Flight emitimos un 1
                 .mapper(new Query1Mapper())
                 // antes de emitir la llave por la red "reducimos" localmente para minimizar los datos que se envian por la red
-                .combiner(new SimpleChunkCombiner())
+                .combiner(new SimpleChunkCombinerFactory())
                 // aeropuertos sin vuelos no llegan a persistirse
-                .reducer(new Query1Reducer())
+                .reducer(new Query1ReducerFactory())
                 .submit();
 
         // Wait and retrieve the result

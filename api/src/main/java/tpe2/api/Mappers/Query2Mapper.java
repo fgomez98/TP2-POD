@@ -2,7 +2,7 @@ package tpe2.api.Mappers;
 
 import com.hazelcast.mapreduce.Context;
 import com.hazelcast.mapreduce.Mapper;
-import tpe2.api.Flight;
+import tpe2.api.Model.Flight;
 
 public class Query2Mapper implements Mapper<String, Flight, String, Long> {
 
