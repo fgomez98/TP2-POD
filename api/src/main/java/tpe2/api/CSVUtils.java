@@ -1,40 +1,40 @@
 package tpe2.api;
 
-import com.opencsv.bean.*;
+import com.opencsv.CSVReader;
+import com.opencsv.bean.ColumnPositionMappingStrategy;
+import com.opencsv.bean.CsvToBean;
+import com.opencsv.bean.CsvToBeanBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.FileReader;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CSVUtils {
 
-    public static List CSVRead(Path path, Class clazz) throws Exception {
-        ColumnPositionMappingStrategy ms = new ColumnPositionMappingStrategy();
-        ms.setType(clazz);
-
-        Reader reader = Files.newBufferedReader(path);
-
-        CsvToBean cb = new CsvToBeanBuilder<>(reader)
-                .withSkipLines(1) // no leo los headers
-                .withType(clazz)
-                .withMappingStrategy(ms)
-                .withSeparator(';')
-                .build();
-
-        List beanList = cb.parse();
-        reader.close();
-        return beanList;
-    }
-    public static void main(String[] args) {
-        try {
-            List<Airport> airports = CSVRead(Paths.get("/Users/fermingomez/Desktop/aeropuertos.csv"), Airport.class);
-            System.out.println(airports);
-            List<Flight> flights = CSVRead(Paths.get("/Users/fermingomez/Desktop/movimientos.csv"), Flight.class);
-            System.out.println(flights);
-        } catch (Exception e) {
-            e.printStackTrace();
+    public static List<Airport> CSVReadAirports(String path) throws Exception {
+        CSVReader reader = new CSVReader(new FileReader(path), ';');
+        String [] nextLine = reader.readNext(); // salteamos al priemra
+        List<Airport> resp = new ArrayList<>();
+        while ((nextLine = reader.readNext()) != null) {
+            resp.add(new Airport(nextLine[1], nextLine[4], nextLine[21]));
         }
+        return resp;
     }
+
+    public static List<Flight> CSVReadFlights(String path) throws Exception {
+        CSVReader reader = new CSVReader(new FileReader(path), ';');
+        String [] nextLine = reader.readNext(); // salteamos al priemra
+        List<Flight> resp = new ArrayList<>();
+        while ((nextLine = reader.readNext()) != null) {
+            resp.add(new Flight(nextLine[2], nextLine[3], nextLine[4], nextLine[5], nextLine[6]));
+        }
+        return resp;
+    }
+
 }

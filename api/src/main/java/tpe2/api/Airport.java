@@ -13,9 +13,6 @@ public class Airport implements Serializable {
     @CsvBindByPosition(position = 21)
     private String province;
 
-    public Airport() {
-    }
-
     public Airport(String oaci, String denomination, String province) {
         this.oaci = oaci;
         this.denomination = denomination;
