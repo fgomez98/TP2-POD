@@ -1,8 +1,12 @@
 package tpe2.api;
 
-import java.io.Serializable;
+import com.hazelcast.nio.ObjectDataInput;
+import com.hazelcast.nio.ObjectDataOutput;
+import com.hazelcast.nio.serialization.DataSerializable;
 
-public class Tuple<K, V> implements Serializable {
+import java.io.IOException;
+
+public class Tuple<K, V> implements DataSerializable {
 
     private K aVal;
     private V bVal;
@@ -26,6 +30,18 @@ public class Tuple<K, V> implements Serializable {
 
     public void setbVal(V bVal) {
         this.bVal = bVal;
+    }
+
+    @Override
+    public void writeData(ObjectDataOutput out) throws IOException {
+        out.writeObject(aVal);
+        out.writeObject(bVal);
+    }
+
+    @Override
+    public void readData(ObjectDataInput in) throws IOException {
+        aVal = in.readObject();
+        bVal = in.readObject();
     }
 
     @Override

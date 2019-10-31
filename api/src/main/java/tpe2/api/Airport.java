@@ -6,7 +6,6 @@ import com.hazelcast.nio.serialization.DataSerializable;
 import com.opencsv.bean.CsvBindByPosition;
 
 import java.io.IOException;
-import java.io.Serializable;
 
 public class Airport implements DataSerializable {
 
