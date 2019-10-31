@@ -4,7 +4,6 @@ import com.hazelcast.mapreduce.Reducer;
 import com.hazelcast.mapreduce.ReducerFactory;
 import tpe2.api.Tuple;
 
-import java.util.List;
 
 public class Q5ReducerFactory implements ReducerFactory<String, Tuple<Long, Long>, Tuple<Long, Long>> {
 
