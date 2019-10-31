@@ -14,7 +14,7 @@ public class Q5Mapper implements Mapper<String, Flight, String, Long> {
      */
     @Override
     public void map(String key, Flight flight, Context<String, Long> context) {
-        switch (flight.getFlightClass()) {
+        switch (flight.getTypeOfMovement()) {
             case "Despegue":
                 if (isPrivate(flight.getFlightClass())) {
                     context.emit(flight.getOaciOrigin(), PRIVATE);
@@ -33,10 +33,7 @@ public class Q5Mapper implements Mapper<String, Flight, String, Long> {
     }
 
     private boolean isPrivate(String flightClass) {
-        if (flightClass.compareTo("Vuelo Privado con Matrícula Nacional") == 0 ||
-                flightClass.compareTo("Vuelo Privado con Matrícula Extranjera") == 0) {
-            return true;
-        }
-        return false;
+        return flightClass.compareTo("Vuelo Privado con Matrícula Nacional") == 0 ||
+                flightClass.compareTo("Vuelo Privado con Matrícula Extranjera") == 0;
     }
 }
