@@ -4,7 +4,7 @@ import com.opencsv.bean.CsvBindByPosition;
 
 import java.io.Serializable;
 
-public class Flight implements Serializable {
+public class Flight implements Serializable{
 
     @CsvBindByPosition(position = 2)
     private String flightClass;
@@ -16,16 +16,19 @@ public class Flight implements Serializable {
     private String oaciOrigin;
     @CsvBindByPosition(position = 6)
     private String oaciDestination;
+    @CsvBindByPosition(position = 7)
+    private String airline;
 
-    public Flight() {
+    public Flight(){
     }
 
-    public Flight(String flightClass, String flightCLassification, String typeOfMovement, String oaciOrigin, String oaciDestination) {
+    public Flight(String flightClass, String flightCLassification, String typeOfMovement, String oaciOrigin, String oaciDestination, String airline) {
         this.flightClass = flightClass;
         this.flightCLassification = flightCLassification;
         this.typeOfMovement = typeOfMovement;
         this.oaciOrigin = oaciOrigin;
         this.oaciDestination = oaciDestination;
+        this.airline = airline;
     }
 
     public String getFlightClass() {
@@ -68,6 +71,14 @@ public class Flight implements Serializable {
         this.oaciDestination = oaciDestination;
     }
 
+    public String getAirline() {
+        return airline;
+    }
+
+    public void setAirline(String airline) {
+        this.airline = airline;
+    }
+
     @Override
     public String toString() {
         return "Flight{" +
@@ -76,6 +87,7 @@ public class Flight implements Serializable {
                 ", typeOfMovement='" + typeOfMovement + '\'' +
                 ", oaciOrigin='" + oaciOrigin + '\'' +
                 ", oaciDestination='" + oaciDestination + '\'' +
+                ", airline='" + airline + '\'' +
                 '}';
     }
 }
