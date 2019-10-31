@@ -104,14 +104,7 @@ public class Query1 {
 
     private List<String> movPerAirPorts(HazelcastInstance hz, List<Airport> airports, List<Flight> flights) throws ExecutionException, InterruptedException {
         JobTracker t = hz.getJobTracker("movPerAirports");
-
-        final IMap<String, String> airportsFiltered = hz.getMap("test");
-        airportsFiltered.put("a", "1");
-        airportsFiltered.put("b", "2");
-        airportsFiltered.put("c", "3");
-        TimeUnit.SECONDS.sleep(10);
-        return null;
-        /*// primero levantamos todos los aeropuertos que nos interesa para asegurarnos que no no haya colados
+        // primero levantamos todos los aeropuertos que nos interesa para asegurarnos que no no haya colados
         final IMap<String, String> airportsFiltered = hz.getMap("g8-q1-airportsFiltered");
         airportsFiltered.putAll(airports
                 .stream()
@@ -152,6 +145,6 @@ public class Query1 {
                         o1.getKey().compareTo(o2.getKey()):
                         o2.getValue().compareTo(o1.getValue()))
                 .map(e -> e.getKey() +";"+ airportsFiltered.get(e.getKey()) +";"+ e.getValue())
-                .collect(Collectors.toList());*/
+                .collect(Collectors.toList());
     }
 }
