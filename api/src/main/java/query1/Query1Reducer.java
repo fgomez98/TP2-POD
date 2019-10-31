@@ -1,14 +1,14 @@
-package tp2.api;
+package query1;
 
 import com.hazelcast.mapreduce.Reducer;
 import com.hazelcast.mapreduce.ReducerFactory;
 
-public class WordCountReducerFactory implements ReducerFactory<String, Long, Long> {
+public class Query1Reducer implements ReducerFactory<String, Long, Long> {
     @Override
     public Reducer<Long, Long> newReducer(String key ) {
-        return new WordCountReducer();
+        return new FlightsCounter();
     }
-    private class WordCountReducer extends Reducer<Long, Long> {
+    private class FlightsCounter extends Reducer<Long, Long> {
         private volatile long sum;
         @Override
         public void beginReduce () {

@@ -2,7 +2,9 @@ package tpe2.api;
 
 import com.opencsv.bean.CsvBindByPosition;
 
-public class Airport {
+import java.io.Serializable;
+
+public class Airport implements Serializable {
 
     @CsvBindByPosition(position = 1)
     private String oaci;
@@ -10,9 +12,6 @@ public class Airport {
     private String denomination;
     @CsvBindByPosition(position = 21)
     private String province;
-
-    public Airport() {
-    }
 
     public Airport(String oaci, String denomination, String province) {
         this.oaci = oaci;
