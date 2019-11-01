@@ -5,14 +5,14 @@ import com.hazelcast.mapreduce.ReducerFactory;
 import tpe2.api.Model.Tuple;
 
 
-public class Query5ReducerFactory implements ReducerFactory<String, Tuple<Long, Long>, Tuple<Long, Long>> {
+public class Query5ReducerFactory implements ReducerFactory<String, Tuple<Long, Long>, Double> {
 
     @Override
-    public Reducer<Tuple<Long, Long>, Tuple<Long, Long>> newReducer(String s) {
+    public Reducer<Tuple<Long, Long>, Double> newReducer(String s) {
         return new Q3Reducer();
     }
 
-    private class Q3Reducer extends Reducer<Tuple<Long, Long>, Tuple<Long, Long>> {
+    private class Q3Reducer extends Reducer<Tuple<Long, Long>, Double> {
 
         private long totalCount;
         private long privateCount;
@@ -31,8 +31,9 @@ public class Query5ReducerFactory implements ReducerFactory<String, Tuple<Long, 
         }
 
         @Override
-        public Tuple<Long, Long> finalizeReduce() {
-            return new Tuple<>(privateCount, totalCount);
+        public Double finalizeReduce() {
+            double percentage = 100 * (privateCount / (double) totalCount);
+            return Math.floor(percentage * 100) / 100; // truncado a 2 decimales
         }
     }
 }

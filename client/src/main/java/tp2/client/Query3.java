@@ -16,6 +16,7 @@ import tpe2.api.Reducers.Query1ReducerFactory;
 import tpe2.api.Model.Flight;
 import tpe2.api.Model.Tuple;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -28,7 +29,7 @@ public class Query3 {
     private static final String MOVEMENTS_MAP = "g8-q3-movements";
 
     @Option(name = "-Daddresses", aliases = "--ipAddresses", usage = "one or more ip directions and ports", required = true)
-    private String[] ips;
+    private List<String> ips;
 
     @Option(name = "-DinPath", aliases = "--inPath", usage = "input directory path", required = true)
     private String dir;
@@ -36,8 +37,12 @@ public class Query3 {
     @Option(name = "-DoutPath", aliases = "--outPath", usage = "Output path where .txt and .csv are")
     private String output;
 
+    public Query3() {
+        super();
+    }
+
     private void setIps(String s) throws CmdLineException {
-        String[] ips = s.split(",");
+        List<String>  ips = Arrays.asList(s.split(","));
         for (String ip : ips) {
             if (!ip.matches("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}):(\\d{1,5})")) {
                 throw new CmdLineException("Invalid ip and port address");

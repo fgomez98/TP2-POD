@@ -26,7 +26,6 @@ import java.util.concurrent.ExecutionException;
 
 public class Query5 {
 
-    private static final String AIRPORTS_MAP = "g8-q5-airports";
     private static final String MOVEMENTS_MAP = "g8-q5-movements";
 
     @Option(name = "-Dn", aliases = "--n", usage = "number of top airlines", required = true)
@@ -93,13 +92,12 @@ public class Query5 {
     }
 
     private static void q5(Query5 query5) throws ExecutionException, InterruptedException {
-
         List<Flight> flightList = new ArrayList<>();
         List<Airport> airports = new ArrayList<>();
 
         try {
-            flightList = CSVUtils.CSVReadFlights(query5.getDir() + "movimientos.csv");
-            airports = CSVUtils.CSVReadAirports(query5.getDir() + "aeropuertos.csv");
+            flightList = CSVUtils.CSVReadFlights(query5.getDir() + "/movimientos.csv");
+            airports = CSVUtils.CSVReadAirports(query5.getDir() + "/aeropuertos.csv");
         } catch (Exception e) {
             System.out.println("There was a problem reading the csv files");
             System.exit(1);
@@ -112,29 +110,26 @@ public class Query5 {
         final IList<Flight> movementsList = hz.getList(MOVEMENTS_MAP);
         movementsList.clear();
         movementsList.addAll(flightList);
-//        final IList<Airport> airportsList = hz.getList(AIRPORTS_MAP);
-//        airportsList.clear();
-//        airportsList.addAll(airports);
 
         // Contamos los movimientos totales que correspondan segun su destino/aterrizaje
-//        final KeyValueSource<String, Airport> airportSource = KeyValueSource.fromList(airportsList);
         final KeyValueSource<String, Flight> movementSource = KeyValueSource.fromList(movementsList);
 
-
         List<String> oacis = new ArrayList<>();
-        airports.forEach((a)-> oacis.add(a.getOaci()));
+        airports.forEach((a) -> {
+            if (a.getOaci() != null && !a.getOaci().equals("")) {
+                oacis.add(a.getOaci());
+            }
+        });
 
         final Job<String, Flight> job = jobTracker.newJob(movementSource);
         final ICompletableFuture<List<Tuple<String, Double>>> future = job
-                .mapper(new Query5Mapper())
+                .mapper(new Query5Mapper(oacis))
                 .combiner(new Query5CombinerFactory())
                 .reducer(new Query5ReducerFactory())
-                .submit(new Query5Collator(oacis,query5.getN()));
+                .submit(new Query5Collator(query5.getN()));
 
         List<Tuple<String, Double>> movementsMap = future.get();
 
-        // solo me interesan los aeropuertos presentes
-        //movementsMap.removeIf((e) -> !airportSource.getAllKeys().contains(e.getaVal()));
         System.out.println("OACI;Porcentaje");
 
         List<String> list = new ArrayList<>();
@@ -144,8 +139,10 @@ public class Query5 {
             DecimalFormat numberFormat = new DecimalFormat("#.00");
             list.add(k.getaVal() + ";" + numberFormat.format(k.getbVal()) + "%\n");
         });
+
         try {
             Files.write(Paths.get(query5.getOutput()), list);
+            list.forEach(s -> System.out.println(s));
         } catch (IOException e) {
             e.printStackTrace();
         }

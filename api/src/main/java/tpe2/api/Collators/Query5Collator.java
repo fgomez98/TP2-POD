@@ -7,47 +7,27 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-public class Query5Collator implements Collator<Map.Entry<String, Tuple<Long, Long>>, List<Tuple<String, Double>>> {
+public class Query5Collator implements Collator<Map.Entry<String, Double>, List<Tuple<String, Double>>> {
 
     private int n;
-    private List<String> oacis;
 
-    public Query5Collator(List<String> oacis, int n) {
+    public Query5Collator(int n) {
         this.n = n;
-        this.oacis = oacis;
     }
 
-    // la llave es el oaci
-    //  privateCount == tuple.getaVal()
-    // totalCount == tuple.getbVal()
     @Override
-    public List<Tuple<String, Double>> collate(Iterable<Map.Entry<String, Tuple<Long, Long>>> values) {
-        // a tener en cuenta Todos los porcentajes deben imprimirse con dos dígitos decimales (truncados).
-        // El orden de impresión es ascendente por porcentaje y luego alfabéticamente por código OACI.
-        // Se deben listar únicamente las  n primeras líneas.
-
-        AtomicLong counter = new AtomicLong(0);
-        for (Map.Entry<String, Tuple<Long, Long>> entry: values) {
-            counter.addAndGet(entry.getValue().getbVal());
-        }
-
+    public List<Tuple<String, Double>> collate(Iterable<Map.Entry<String, Double>> values) {
         List<Tuple<String, Double>> ret = new ArrayList<>();
+        values.forEach(e -> ret.add(new Tuple<>(e.getKey(), e.getValue())));
 
-        values.forEach((entry) -> ret.add(new Tuple<>(entry.getKey(),100.0*(entry.getValue().getaVal())/counter.doubleValue())));
-
-        Comparator<Tuple<String, Double>> a = (o1,o2)-> (int) (o1.getbVal()-o2.getbVal());
-        Comparator<Tuple<String, Double>> aRev = (o1,o2)-> (int) (o2.getbVal()-o1.getbVal());
+        Comparator<Tuple<String, Double>> percentageCmp = Comparator.comparingDouble(Tuple::getbVal);
+        Comparator<Tuple<String, Double>> alfabeticCmp = Comparator.comparing(Tuple::getaVal);
 
         return ret.stream()
-                .filter((oaci) -> oacis.contains(oaci.getaVal()))
-                .sorted(aRev.thenComparing((o1,o2)-> o2.getaVal().compareTo(o1.getaVal())))
+                .sorted(percentageCmp.thenComparing(alfabeticCmp))
                 .limit(n)
-                .sorted(a.thenComparing(Tuple::getaVal))
-                .collect(Collectors.toList());
-        //ret.sort(a.thenComparing(Tuple::getaVal));
-        //return ret.subList(0,n<ret.size()?ret.size():n);
+                .sorted(percentageCmp.thenComparing(alfabeticCmp)).collect(Collectors.toList());
     }
 }

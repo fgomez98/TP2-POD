@@ -99,8 +99,6 @@ public class Query1 {
         }
     }
 
-
-
     private List<String> movPerAirPorts(HazelcastInstance hz, List<Airport> airports, List<Flight> flights) throws ExecutionException, InterruptedException {
         JobTracker t = hz.getJobTracker("movPerAirports");
         // primero levantamos todos los aeropuertos que nos interesa para asegurarnos que no no haya colados
