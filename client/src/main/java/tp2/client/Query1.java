@@ -13,7 +13,7 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 import tpe2.api.Combiners.SimpleChunkCombinerFactory;
 import tpe2.api.Mappers.Query1Mapper;
-import tpe2.api.Reducers.Query1ReducerFactory;
+import tpe2.api.Reducers.SimpleReducerFactory;
 import tpe2.api.Model.Airport;
 import tpe2.api.CSVUtils;
 import tpe2.api.Model.Flight;
@@ -131,7 +131,7 @@ public class Query1 {
                 // antes de emitir la llave por la red "reducimos" localmente para minimizar los datos que se envian por la red
                 .combiner(new SimpleChunkCombinerFactory())
                 // aeropuertos sin vuelos no llegan a persistirse
-                .reducer(new Query1ReducerFactory())
+                .reducer(new SimpleReducerFactory())
                 .submit();
 
         // Wait and retrieve the result

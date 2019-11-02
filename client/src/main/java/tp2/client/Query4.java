@@ -6,11 +6,11 @@ import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
+import tpe2.api.Combiners.SimpleChunkCombinerFactory;
 import tpe2.api.Model.Flight;
 import tpe2.api.Collators.Query4Collator;
-import tpe2.api.Combiners.Query4CombinerFactory;
 import tpe2.api.Mappers.Query4Mapper;
-import tpe2.api.Reducers.Query4ReducerFactory;
+import tpe2.api.Reducers.SimpleReducerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -85,8 +85,8 @@ public class Query4 {
         final Job<String, Flight> job = jobTracker.newJob(source);
         final ICompletableFuture<Map<String, Long>> future = job
                 .mapper(new Query4Mapper())
-                .combiner(new Query4CombinerFactory())
-                .reducer(new Query4ReducerFactory())
+                .combiner(new SimpleChunkCombinerFactory())
+                .reducer(new SimpleReducerFactory())
                 .submit(new Query4Collator(Integer.valueOf(query.resultsAmonut)));
 
         Map<String, Long> movementsMap = future.get();

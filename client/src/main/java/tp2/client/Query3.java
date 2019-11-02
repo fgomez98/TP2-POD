@@ -12,7 +12,7 @@ import tpe2.api.Combiners.SimpleChunkCombinerFactory;
 import tpe2.api.Mappers.Query3Mapper;
 import tpe2.api.Mappers.Query1Mapper;
 import tpe2.api.Reducers.Query3ReducerFactory;
-import tpe2.api.Reducers.Query1ReducerFactory;
+import tpe2.api.Reducers.SimpleReducerFactory;
 import tpe2.api.Model.Flight;
 import tpe2.api.Model.Tuple;
 
@@ -79,7 +79,7 @@ public class Query3 {
         final ICompletableFuture<Map<String, Long>> future = job
                 .mapper(new Query1Mapper())
                 .combiner(new SimpleChunkCombinerFactory())
-                .reducer(new Query1ReducerFactory())
+                .reducer(new SimpleReducerFactory())
                 .submit();
 
         Map<String, Long> movementsMap = future.get();

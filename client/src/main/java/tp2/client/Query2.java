@@ -9,8 +9,8 @@ import tpe2.api.Collators.Query2Collator;
 import tpe2.api.Combiners.SimpleChunkCombinerFactory;
 import tpe2.api.Model.Flight;
 import tpe2.api.Mappers.Query2Mapper;
-import tpe2.api.Reducers.Query2ReducerFactory;
 import tpe2.api.Model.Tuple;
+import tpe2.api.Reducers.SimpleReducerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -103,7 +103,7 @@ public class Query2 {
         ICompletableFuture<List<Tuple<String, Double>>> future = job
                 .mapper(new Query2Mapper())
                 .combiner(new SimpleChunkCombinerFactory())
-                .reducer(new Query2ReducerFactory())
+                .reducer(new SimpleReducerFactory())
                 .submit(new Query2Collator(query2.getN()));
 
         try {

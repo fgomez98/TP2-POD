@@ -11,7 +11,7 @@ import com.hazelcast.mapreduce.KeyValueSource;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 import tpe2.api.Combiners.SimpleChunkCombinerFactory;
-import tpe2.api.Reducers.Query1ReducerFactory;
+import tpe2.api.Reducers.SimpleReducerFactory;
 import tpe2.api.Mappers.Query6Mapper;
 import tpe2.api.Model.Airport;
 import tpe2.api.CSVUtils;
@@ -134,7 +134,7 @@ public class Query6 {
                 // antes de emitir la llave por la red "reducimos" localmente para minimizar los datos que se envian por la red
                 .combiner(new SimpleChunkCombinerFactory())
                 // aeropuertos sin vuelos no llegan a persistirse
-                .reducer(new Query1ReducerFactory())
+                .reducer(new SimpleReducerFactory())
                 // filtramos todos los que la sume de menor que min
                 .submit(iterable ->
                     StreamSupport.stream(iterable.spliterator(), false)
