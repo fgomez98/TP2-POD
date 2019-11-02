@@ -1,5 +1,6 @@
 package tp2.client;
 
+import ch.qos.logback.classic.Logger;
 import com.hazelcast.core.*;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
@@ -95,15 +96,22 @@ public class Query5 {
         List<Flight> flightList = new ArrayList<>();
         List<Airport> airports = new ArrayList<>();
 
+        Logger logger = Helpers.createLoggerFor("Query5", query5.getOutput()+"/query5.txt");
+
         try {
+            logger.info("Inicio de la lectura del archivo");
             flightList = CSVUtils.CSVReadFlights(query5.getDir() + "/movimientos.csv");
             airports = CSVUtils.CSVReadAirports(query5.getDir() + "/aeropuertos.csv");
+            logger.info("Fin de lectura del archivo");
         } catch (Exception e) {
             System.out.println("There was a problem reading the csv files");
             System.exit(1);
         }
 
         HazelcastInstance hz = Hazelcast.newHazelcastInstance();
+
+        logger.info("Inicio del trabajo map/reduce");
+
         JobTracker jobTracker = hz.getJobTracker("query-5-job");
 
 
@@ -130,7 +138,7 @@ public class Query5 {
 
         List<Tuple<String, Double>> movementsMap = future.get();
 
-        System.out.println("OACI;Porcentaje");
+        logger.info("Fin del trabajo map/reduce");
 
         List<String> list = new ArrayList<>();
         list.add("OACI;Porcentaje\n");
@@ -141,12 +149,12 @@ public class Query5 {
         });
 
         try {
-            Files.write(Paths.get(query5.getOutput()), list);
-            list.forEach(s -> System.out.println(s));
+            Files.write(Paths.get(query5.getOutput()+"query5.csv"), list);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         System.out.println("done");
+        System.exit(0);
     }
 }

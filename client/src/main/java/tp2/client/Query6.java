@@ -70,13 +70,14 @@ public class Query6 {
 
     public static void main(String[] args) {
         Query6 query = new Query6();
-        Logger logger = Helpers.createLoggerFor("Query2", query.getDout()+"/query2.txt");
         try {
             CmdParserUtils.init(args, query);
         } catch (IOException e) {
             System.out.println("There was a problem reading the arguments");
             System.exit(1);
         }
+
+        Logger logger = Helpers.createLoggerFor("Query6", query.getDout()+"/query6.txt");
 
         for (String ip : query.getIps()) {
             System.out.println(ip);
@@ -86,8 +87,8 @@ public class Query6 {
             HazelcastInstance hz = Hazelcast.newHazelcastInstance();
 
             logger.info("Inicio de la lectura del archivo");
-            List<Airport> airports = CSVUtils.CSVReadAirports("/Users/pilo/development/itba/pod/TP2-POD/server/src/main/resources/aeropuertos.csv");
-            List<Flight> flights = CSVUtils.CSVReadFlights("/Users/pilo/development/itba/pod/TP2-POD/server/src/main/resources/movimientos.csv");
+            List<Airport> airports = CSVUtils.CSVReadAirports(query.getDout() + "aeropuertos.csv");
+            List<Flight> flights = CSVUtils.CSVReadFlights(query.getDout() + "movimientos.csv");
             logger.info("Fin de lectura del archivo");
 
             logger.info("Inicio del trabajo map/reduce");

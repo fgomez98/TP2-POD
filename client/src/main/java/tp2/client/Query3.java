@@ -1,5 +1,6 @@
 package tp2.client;
 
+import ch.qos.logback.classic.Logger;
 import com.hazelcast.core.*;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
@@ -7,6 +8,7 @@ import com.hazelcast.mapreduce.KeyValueSource;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
+import tpe2.api.CSVUtils;
 import tpe2.api.Collators.Query3Collator;
 import tpe2.api.Combiners.SimpleChunkCombinerFactory;
 import tpe2.api.Mappers.Query3Mapper;
@@ -16,6 +18,7 @@ import tpe2.api.Reducers.SimpleReducerFactory;
 import tpe2.api.Model.Flight;
 import tpe2.api.Model.Tuple;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +31,6 @@ public class Query3 {
     private static final String PARTIAL_MAP = "g8-q3-pmovements";
     private static final String MOVEMENTS_MAP = "g8-q3-movements";
 
-    @Option(name = "-Daddresses", aliases = "--ipAddresses", usage = "one or more ip directions and ports", required = true)
     private List<String> ips;
 
     @Option(name = "-DinPath", aliases = "--inPath", usage = "input directory path", required = true)
@@ -41,6 +43,8 @@ public class Query3 {
         super();
     }
 
+    @Option(name = "-Daddresses", aliases = "--ipAddresses",
+            usage = "one or more ip directions and ports"/*, required = true*/)
     private void setIps(String s) throws CmdLineException {
         List<String>  ips = Arrays.asList(s.split(","));
         for (String ip : ips) {
@@ -51,21 +55,60 @@ public class Query3 {
         this.ips = ips;
     }
 
-
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
-        movPerAirPorts();
+    public List<String> getIps() {
+        return ips;
     }
 
-    private static void movPerAirPorts() throws ExecutionException, InterruptedException {
+    public void setIps(List<String> ips) {
+        this.ips = ips;
+    }
+
+    public String getDir() {
+        return dir;
+    }
+
+    public void setDir(String dir) {
+        this.dir = dir;
+    }
+
+    public String getOutput() {
+        return output;
+    }
+
+    public void setOutput(String output) {
+        this.output = output;
+    }
+
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+        Query3 query = new Query3();
+
+        try {
+            CmdParserUtils.init(args, query);
+        } catch (IOException e) {
+            System.out.println("There was a problem reading the arguments");
+            System.exit(1);
+        }
+
+        movPerAirPorts(query);
+    }
+
+    private static void movPerAirPorts(Query3 query) throws ExecutionException, InterruptedException {
+
+        Logger logger = Helpers.createLoggerFor("Query3", query.getOutput()+"query3.txt");
+
 
         List<Flight> flights = null;
         try {
-            flights = CSVReadFlights("/Users/fermingomez/Desktop/movimientos.csv");
+            logger.info("Inicio de la lectura del archivo");
+            flights = CSVUtils.CSVReadFlights(query.getDir() + "movimientos.csv");
+            logger.info("Fin de lectura del archivo");
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         HazelcastInstance hz = Hazelcast.newHazelcastInstance();
+
+        logger.info("Inicio del trabajo map/reduce");
 
         final JobTracker jobTracker = hz.getJobTracker("query-3-job");
 
@@ -97,6 +140,8 @@ public class Query3 {
                 .submit(new Query3Collator());
 
         List<Map.Entry<Long, List<Tuple<String, String>>>> result = future2.get();
+
+        logger.info("Fin del trabajo map/reduce");
 
         // todo meter esto en un csv
         System.out.println("Grupo;Aeropuerto A;Aeropuerto B");

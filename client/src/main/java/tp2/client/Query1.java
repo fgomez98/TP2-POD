@@ -31,7 +31,6 @@ public class Query1 {
 
     @Option(name = "-Daddresses", aliases = "--ipAddresses",
             usage = "one or more ip directions and ports", required = true)
-
     private void setIps(String s) throws CmdLineException {
         List<String> list = Arrays.asList(s.split(";"));
         for (String ip : list) {
@@ -62,13 +61,13 @@ public class Query1 {
 
     public static void main(String[] args) {
         Query1 query = new Query1();
-        Logger logger = Helpers.createLoggerFor("Query1", query.getDout()+"/query1.txt");
         try {
             CmdParserUtils.init(args, query);
         } catch (IOException e) {
             System.out.println("There was a problem reading the arguments");
             System.exit(1);
         }
+        Logger logger = Helpers.createLoggerFor("Query1", query.getDout()+"/query1.txt");
 
         for (String ip : query.getIps()) {
             System.out.println(ip);
@@ -86,8 +85,8 @@ public class Query1 {
             System.out.println("Members: "+hz.getCluster().getMembers());
 
             logger.info("Inicio de la lectura del archivo");
-            List<Airport> airports = CSVUtils.CSVReadAirports("/Users/pilo/development/itba/pod/TP2-POD/server/src/main/resources/aeropuertos.csv");
-            List<Flight> flights = CSVUtils.CSVReadFlights("/Users/pilo/development/itba/pod/TP2-POD/server/src/main/resources/movimientos.csv");
+            List<Airport> airports = CSVUtils.CSVReadAirports(query.getDout() + "aeropuertos.csv");
+            List<Flight> flights = CSVUtils.CSVReadFlights(query.getDout() + "movimientos.csv");
             logger.info("Fin de lectura del archivo");
 
             logger.info("Inicio del trabajo map/reduce");

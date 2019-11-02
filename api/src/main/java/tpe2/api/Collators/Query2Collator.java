@@ -24,7 +24,6 @@ public class Query2Collator implements Collator<Map.Entry<String, Long>, List<Tu
             counter.addAndGet(entry.getValue());
             list.add(new Tuple<>(entry.getKey(),entry.getValue()));
         });
-        System.out.println(counter);
         list.sort((o1, o2) -> (int) (o2.getbVal() - o1.getbVal()));
         double pctg = 0;
         for (int i = 0; i < n && i < list.size(); i++) {

@@ -1,5 +1,6 @@
 package tp2.client;
 
+import ch.qos.logback.classic.Logger;
 import com.hazelcast.core.*;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
@@ -16,6 +17,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +28,6 @@ import static tpe2.api.CSVUtils.CSVReadFlights;
 
 public class Query4 {
 
-    @Option(name = "-Daddresses", aliases = "--ipAddresses", usage = "one or more ip directions and ports", required = false)
     private String[] ips;
 
     @Option(name = "-DinPath", aliases = "--inPath", usage = "input directory path", required = true)
@@ -41,6 +42,8 @@ public class Query4 {
     @Option(name = "-Dn", usage = "Number of results")
     private String resultsAmonut;
 
+    @Option(name = "-Daddresses", aliases = "--ipAddresses",
+            usage = "one or more ip directions and ports"/*, required = true*/)
     private void setIps(String s) throws CmdLineException {
         String[] ips = s.split(",");
         for (String ip : ips) {
@@ -49,6 +52,26 @@ public class Query4 {
             }
         }
         this.ips = ips;
+    }
+
+    public String[] getIps() {
+        return ips;
+    }
+
+    public String getDir() {
+        return dir;
+    }
+
+    public String getOutput() {
+        return output;
+    }
+
+    public String getOriginOaci() {
+        return originOaci;
+    }
+
+    public String getResultsAmonut() {
+        return resultsAmonut;
     }
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
@@ -61,14 +84,20 @@ public class Query4 {
             System.exit(1);
         }
 
-        List<Flight> flights = null;
+        Logger logger = Helpers.createLoggerFor("Query4", query.getOutput()+"query4.txt");
+
+        List<Flight> flights = new ArrayList<>();
         try {
-            flights = CSVReadFlights(query.dir + "/movimientos.csv");
+            logger.info("Inicio de la lectura del archivo");
+            flights = CSVReadFlights(query.getDir() + "/movimientos.csv");
+            logger.info("Fin de lectura del archivo");
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         HazelcastInstance hz = Hazelcast.newHazelcastInstance();
+
+        logger.info("Inicio del trabajo map/reduce");
 
         final JobTracker jobTracker = hz.getJobTracker("query-4-job");
 
@@ -95,6 +124,8 @@ public class Query4 {
         movementsIMap.clear();
         movementsMap.forEach(movementsIMap::set);
 
+        logger.info("Fin del trabajo map/reduce");
+
         try (PrintWriter writer = new PrintWriter(new File(query.output + "/query4.csv"))) {
             StringBuilder sb = new StringBuilder();
             Iterator it = movementsMap.entrySet().iterator();
@@ -112,5 +143,6 @@ public class Query4 {
         }
 
         System.out.println("Done");
+        System.exit(0);
     }
 }
