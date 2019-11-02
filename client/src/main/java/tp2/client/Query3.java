@@ -19,6 +19,9 @@ import tpe2.api.Model.Flight;
 import tpe2.api.Model.Tuple;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +49,7 @@ public class Query3 {
     @Option(name = "-Daddresses", aliases = "--ipAddresses",
             usage = "one or more ip directions and ports"/*, required = true*/)
     private void setIps(String s) throws CmdLineException {
-        List<String>  ips = Arrays.asList(s.split(","));
+        List<String> ips = Arrays.asList(s.split(","));
         for (String ip : ips) {
             if (!ip.matches("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}):(\\d{1,5})")) {
                 throw new CmdLineException("Invalid ip and port address");
@@ -94,7 +97,7 @@ public class Query3 {
 
     private static void movPerAirPorts(Query3 query) throws ExecutionException, InterruptedException {
 
-        Logger logger = Helpers.createLoggerFor("Query3", query.getOutput()+"query3.txt");
+        Logger logger = Helpers.createLoggerFor("Query3", query.getOutput() + "query3.txt");
 
 
         List<Flight> flights = null;
@@ -143,12 +146,19 @@ public class Query3 {
 
         logger.info("Fin del trabajo map/reduce");
 
-        // todo meter esto en un csv
-        System.out.println("Grupo;Aeropuerto A;Aeropuerto B");
-        result.forEach(e -> {
-            e.getValue().forEach(t -> {
-                System.out.println(e.getKey() + ";" + t.getaVal() + ";" + t.getbVal());
+        try {
+            List<String> outputList = new ArrayList<>();
+            outputList.add("Grupo;Aeropuerto A;Aeropuerto B");
+            result.forEach(e -> {
+                e.getValue().forEach(t -> {
+                    outputList.add(e.getKey() + ";" + t.getaVal() + ";" + t.getbVal());
+                });
             });
-        });
+            Files.write(Paths.get(query.getOutput() + "query3.csv"), outputList);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.exit(0);
+
     }
 }
