@@ -1,3 +1,3 @@
 #!/bin/bash
 
-java -cp 'lib/jars/*' "tp2.client.Query2" 2 $*
+java -cp 'lib/jars/*' "Query2" 2 $*

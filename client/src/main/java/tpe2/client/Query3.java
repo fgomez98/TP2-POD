@@ -1,4 +1,4 @@
-package tp2.client;
+package tpe2.client;
 
 import ch.qos.logback.classic.Logger;
 import com.hazelcast.core.*;
@@ -26,8 +26,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-
-import static tpe2.api.CSVUtils.CSVReadFlights;
 
 public class Query3 {
 

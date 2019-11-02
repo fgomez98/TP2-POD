@@ -1,4 +1,4 @@
-package tp2.client;
+package tpe2.client;
 
 import ch.qos.logback.classic.Logger;
 import com.hazelcast.core.*;

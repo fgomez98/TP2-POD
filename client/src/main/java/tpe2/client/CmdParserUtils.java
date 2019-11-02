@@ -1,4 +1,4 @@
-package tp2.client;
+package tpe2.client;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
