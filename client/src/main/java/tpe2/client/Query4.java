@@ -62,10 +62,6 @@ public class Query4 implements Query {
     public void runQuery(HazelcastInstance hz, List<Airport> airports, List<Flight> flights) throws ExecutionException, InterruptedException {
         final JobTracker jobTracker = hz.getJobTracker("query-4-job");
 
-        flights = flights.stream()
-                .filter(a -> a.getOaciOrigin().equals(this.originOaci))
-                .collect(Collectors.toList());
-
         final IList<Flight> dataList = hz.getList("g8-q4-movements-map");
         dataList.clear();
         dataList.addAll(flights);
@@ -73,7 +69,7 @@ public class Query4 implements Query {
         final KeyValueSource<String, Flight> source = KeyValueSource.fromList(dataList);
         final Job<String, Flight> job = jobTracker.newJob(source);
         final ICompletableFuture<Map<String, Long>> future = job
-                .mapper(new Query4Mapper())
+                .mapper(new Query4Mapper(this.originOaci))
                 .combiner(new SimpleChunkCombinerFactory())
                 .reducer(new SimpleReducerFactory())
                 .submit(new Query4Collator(this.resultsAmonut));
