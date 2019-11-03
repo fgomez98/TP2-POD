@@ -119,6 +119,7 @@ public class Client {
 
     public static void main(String[] args) {
         Client client = new Client();
+
         try {
             CmdParserUtils.init(args, client);
         } catch (IOException e) {
@@ -167,12 +168,23 @@ public class Client {
             System.out.println("Members: " + hz.getCluster().getMembers());
 
             logger.info("Inicio de la lectura del archivo");
-            List<Airport> airports = CSVUtils.CSVReadAirports(client.getDout() + "/aeropuertos.csv");
+
+            /*
+            Solamente utilizan los aeropuertos las queries 1, 5, 6
+             */
+            List<Airport> airports = null;
+            if (client.getQueryNum() == 1 || client.getQueryNum() == 5 || client.getQueryNum() == 6) {
+                airports = CSVUtils.CSVReadAirports(client.getDout() + "/aeropuertos.csv");
+            }
+
             List<Flight> flights = CSVUtils.CSVReadFlights(client.getDout() + "/movimientos.csv");
+
             logger.info("Fin de lectura del archivo");
 
             logger.info("Inicio del trabajo map/reduce");
+
             query.runQuery(hz, airports, flights);
+
             logger.info("Fin del trabajo map/reduce");
         } catch (Exception e) {
             e.printStackTrace();

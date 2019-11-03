@@ -132,7 +132,7 @@ public class Query2 implements Query {
     public void runQuery(HazelcastInstance hazel, List<Airport> airports, List<Flight> flightList) throws ExecutionException, InterruptedException {
         JobTracker jobTracker = hazel.getJobTracker("top-" + this.getN() + "-airlines");
 
-        IList<Flight> iList = hazel.getList("top-airlines");
+        IList<Flight> iList = hazel.getList("g8-q2-top-airlines");
         iList.clear();
         iList.addAll(flightList);
 

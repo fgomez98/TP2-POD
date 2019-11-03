@@ -71,7 +71,7 @@ public class Query4 implements Query {
                 .filter(a -> a.getOaciOrigin().equals(this.originOaci))
                 .collect(Collectors.toList());
 
-        final IList<Flight> dataList = hz.getList("MOVEMENTS_MAP");
+        final IList<Flight> dataList = hz.getList("g8-q4-movements-map");
         dataList.clear();
         dataList.addAll(flights);
 
@@ -85,7 +85,7 @@ public class Query4 implements Query {
 
         Map<String, Long> movementsMap = future.get();
 
-        IMap<String, Long> movementsIMap = hz.getMap("PARTIAL_MAP");
+        IMap<String, Long> movementsIMap = hz.getMap("g8-q4-partial-map");
         movementsIMap.clear();
         movementsMap.forEach(movementsIMap::set);
 
