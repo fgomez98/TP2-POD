@@ -1,11 +1,10 @@
 package tpe2.client;
 
 import com.hazelcast.core.*;
-import com.hazelcast.mapreduce.Collator;
-import com.hazelcast.mapreduce.Job;
-import com.hazelcast.mapreduce.JobTracker;
-import com.hazelcast.mapreduce.KeyValueSource;
+import com.hazelcast.mapreduce.*;
+import tpe2.api.Collections;
 import tpe2.api.Combiners.SimpleChunkCombinerFactory;
+import tpe2.api.KeyPredicates.OnlyOACIAirports;
 import tpe2.api.Mappers.Query1Mapper;
 import tpe2.api.Reducers.SimpleReducerFactory;
 import tpe2.api.Model.Airport;
@@ -22,9 +21,6 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 public class Query1 implements Query {
-
-    private static final String AIRPORTSMAP = "g8-q1-airportsFiltered";
-    private static final String FLIGTHSLIST = "g8-q1-flightsList";
 
     private List<String> ips;
 
@@ -53,22 +49,27 @@ public class Query1 implements Query {
     private List<String> movPerAirPorts(HazelcastInstance hz, List<Airport> airports, List<Flight> flights) throws ExecutionException, InterruptedException {
         JobTracker t = hz.getJobTracker("movPerAirports");
         // primero mapeamos los aeropuertos de manera que nos sirva en el futuro
-        final IMap<String, String> airports2 = hz.getMap(AIRPORTSMAP);
+        final IMap<String, String> airports2 = hz.getMap(Collections.airports.getName());
         airports2.putAll(airports
                 .stream()
                 .collect(Collectors.toMap(Airport::getOaci, Airport::getDenomination)));
 
         // ahora agregamos al multimap cada movimiento desde el aeropuerto
-        final IList<Flight> flights2 = hz.getList(FLIGTHSLIST);
-        flights2.clear(); flights2.addAll(flights);
+        final MultiMap<String, Flight> flights2 = hz.getMultiMap(Collections.flights.getName());
+        flights2.clear(); flights.forEach(f -> {
+            //if (f.getTypeOfMovement().equals("Despegue"))
+                flights2.put(f.getOaciOrigin(), f);
+            //else
+                flights2.put(f.getOaciDestination(), f);
+        });
 
         // The key returned by this KeyValueSource implementation is ALWAYS the name of the list itself,
         // whereas the value are the entries of the list, one by one.
         // https://docs.hazelcast.org/docs/3.6.8/javadoc/com/hazelcast/mapreduce/KeyValueSource.html
-        final KeyValueSource<String, Flight> source = KeyValueSource.fromList(flights2);
+        final KeyValueSource<String, Flight> source = KeyValueSource.fromMultiMap(flights2);
         Job<String, Flight> job = t.newJob(source);
         ICompletableFuture<List<String>> future = job
-                // no es necesario eliminar las llaves que no esté en airports.csv, pues ya fue hecho
+                .keyPredicate(new OnlyOACIAirports())
                 // por cada origen y destino del Flight emitimos un 1
                 .mapper(new Query1Mapper())
                 // antes de emitir la llave por la red "reducimos" localmente para minimizar los datos que se envian por la red
@@ -82,7 +83,6 @@ public class Query1 implements Query {
                                 o2.getValue().compareTo(o1.getValue()))
                         .map(e -> e.getKey() + ";" + airports2.get(e.getKey())+ ";" + e.getValue() + "\n")
                         .collect(Collectors.toList()));
-
         // Wait and retrieve the result
         return future.get();
     }

@@ -5,6 +5,7 @@ import com.hazelcast.core.HazelcastInstanceAware;
 import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Context;
 import com.hazelcast.mapreduce.Mapper;
+import tpe2.api.Collections;
 import tpe2.api.Model.Airport;
 import tpe2.api.Model.Flight;
 
@@ -12,11 +13,10 @@ public class Query1Mapper implements Mapper<String, Flight, String, Long>, Hazel
     private static final Long ONE = 1L;
     private transient HazelcastInstance hz;
 
-    private static final String AIRPORTSMAP = "g8-q1-airportsFiltered";
-
     @Override
     public void map(String key, Flight f, Context<String, Long> context) {
-        IMap<String, String> airports = hz.getMap(AIRPORTSMAP);
+        System.out.println(f.getOaciOrigin()+f.getOaciDestination());
+        IMap<String, String> airports = hz.getMap(Collections.airports.name);
         switch (f.getTypeOfMovement()) {
             case "Despegue":
                 if (airports.containsKey(f.getOaciOrigin()))
