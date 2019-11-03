@@ -1,3 +1,3 @@
 #!/bin/bash
 
-java -cp 'lib/jars/*' "Query6" $*
+java -cp 'lib/jars/*' "tpe2.client.Client" -Dquery=6 $*

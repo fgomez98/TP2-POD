@@ -1,60 +1,37 @@
 package tpe2.client;
 
-import ch.qos.logback.classic.Logger;
+
 import com.hazelcast.core.*;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
-
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.Option;
 import tpe2.api.CSVUtils;
 import tpe2.api.Collators.Query3Collator;
 import tpe2.api.Combiners.SimpleChunkCombinerFactory;
 import tpe2.api.Mappers.Query3Mapper;
 import tpe2.api.Mappers.Query1Mapper;
+import tpe2.api.Model.Airport;
 import tpe2.api.Reducers.Query3ReducerFactory;
 import tpe2.api.Reducers.SimpleReducerFactory;
 import tpe2.api.Model.Flight;
 import tpe2.api.Model.Tuple;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-public class Query3 {
+public class Query3 implements Query {
 
     private static final String PARTIAL_MAP = "g8-q3-pmovements";
     private static final String MOVEMENTS_MAP = "g8-q3-movements";
 
     private List<String> ips;
 
-    @Option(name = "-DinPath", aliases = "--inPath", usage = "input directory path", required = true)
     private String dir;
 
-    @Option(name = "-DoutPath", aliases = "--outPath", usage = "Output path where .txt and .csv are")
     private String output;
-
-    public Query3() {
-        super();
-    }
-
-    @Option(name = "-Daddresses", aliases = "--ipAddresses",
-            usage = "one or more ip directions and ports"/*, required = true*/)
-    private void setIps(String s) throws CmdLineException {
-        List<String> ips = Arrays.asList(s.split(","));
-        for (String ip : ips) {
-            if (!ip.matches("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}):(\\d{1,5})")) {
-                throw new CmdLineException("Invalid ip and port address");
-            }
-        }
-        this.ips = ips;
-    }
 
     public List<String> getIps() {
         return ips;
@@ -80,37 +57,14 @@ public class Query3 {
         this.output = output;
     }
 
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
-        Query3 query = new Query3();
-
-        try {
-            CmdParserUtils.init(args, query);
-        } catch (IOException e) {
-            System.out.println("There was a problem reading the arguments");
-            System.exit(1);
-        }
-
-        movPerAirPorts(query);
+    public Query3(List<String> ips, String dir, String output) {
+        this.ips = ips;
+        this.dir = dir;
+        this.output = output;
     }
 
-    private static void movPerAirPorts(Query3 query) throws ExecutionException, InterruptedException {
-
-        Logger logger = Helpers.createLoggerFor("Query3", query.getOutput() + "query3.txt");
-
-
-        List<Flight> flights = null;
-        try {
-            logger.info("Inicio de la lectura del archivo");
-            flights = CSVUtils.CSVReadFlights(query.getDir() + "movimientos.csv");
-            logger.info("Fin de lectura del archivo");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        HazelcastInstance hz = Hazelcast.newHazelcastInstance();
-
-        logger.info("Inicio del trabajo map/reduce");
-
+    @Override
+    public void runQuery(HazelcastInstance hz, List<Airport> airports, List<Flight> flights) throws ExecutionException, InterruptedException {
         final JobTracker jobTracker = hz.getJobTracker("query-3-job");
 
         final IList<Flight> dataList = hz.getList(MOVEMENTS_MAP);
@@ -142,21 +96,23 @@ public class Query3 {
 
         List<Map.Entry<Long, List<Tuple<String, String>>>> result = future2.get();
 
-        logger.info("Fin del trabajo map/reduce");
-
         try {
-            List<String> outputList = new ArrayList<>();
-            outputList.add("Grupo;Aeropuerto A;Aeropuerto B");
-            result.forEach(e -> {
-                e.getValue().forEach(t -> {
-                    outputList.add(e.getKey() + ";" + t.getaVal() + ";" + t.getbVal());
-                });
-            });
-            Files.write(Paths.get(query.getOutput() + "query3.csv"), outputList);
+            CSVUtils.CSVWrite(Paths.get(this.getOutput() + "/query3.csv"),
+                    result,
+                    "Grupo;Aeropuerto A;Aeropuerto B\n",
+                    this::toCSVRow
+            );
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Error while writing results on file");
+            System.exit(1);
         }
-        System.exit(0);
+    }
 
+    private String toCSVRow(Map.Entry<Long, List<Tuple<String, String>>> entry) {
+        StringBuilder sb = new StringBuilder();
+        entry.getValue().forEach(tuple ->
+                sb.append(entry.getKey()).append(';').append(tuple.getaVal()).append(';').append(tuple.getbVal()).append('\n')
+        );
+        return sb.toString();
     }
 }

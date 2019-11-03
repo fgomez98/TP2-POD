@@ -9,8 +9,6 @@ import com.hazelcast.core.*;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.Option;
 import tpe2.api.Combiners.SimpleChunkCombinerFactory;
 import tpe2.api.Mappers.Query1Mapper;
 import tpe2.api.Reducers.SimpleReducerFactory;
@@ -19,32 +17,19 @@ import tpe2.api.CSVUtils;
 import tpe2.api.Model.Flight;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-public class Query1 {
+public class Query1 implements Query {
 
     private List<String> ips;
 
-    @Option(name = "-Daddresses", aliases = "--ipAddresses",
-            usage = "one or more ip directions and ports", required = true)
-    private void setIps(String s) throws CmdLineException {
-        List<String> list = Arrays.asList(s.split(";"));
-        for (String ip : list) {
-            if (!ip.matches("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}):(\\d{1,5})")) {
-                throw new CmdLineException("Invalid ip and port address");
-            }
-        }
-        this.ips = list;
-    }
-
-    @Option(name = "-DinPath", aliases = "--inPath", usage = "input directory path", required = true)
     private String din;
 
-    @Option(name = "-DoutPath", aliases = "--outPath", usage = "Output path where .txt and .csv are")
     private String dout;
 
     public List<String> getIps() {
@@ -59,6 +44,15 @@ public class Query1 {
         return dout;
     }
 
+    public Query1(List<String> ips, String din, String dout) {
+        this.ips = ips;
+        this.din = din;
+        this.dout = dout;
+    }
+
+    public Query1() {
+    }
+
     public static void main(String[] args) {
         Query1 query = new Query1();
         try {
@@ -67,7 +61,7 @@ public class Query1 {
             System.out.println("There was a problem reading the arguments");
             System.exit(1);
         }
-        Logger logger = Helpers.createLoggerFor("Query1", query.getDout()+"/query1.txt");
+        Logger logger = Helpers.createLoggerFor("Query1", query.getDout() + "/query1.txt");
 
         for (String ip : query.getIps()) {
             System.out.println(ip);
@@ -82,11 +76,11 @@ public class Query1 {
             query.getIps().forEach(clientNetworkConfig::addAddress);
 
             HazelcastInstance hz = HazelcastClient.newHazelcastClient(cfg);
-            System.out.println("Members: "+hz.getCluster().getMembers());
+            System.out.println("Members: " + hz.getCluster().getMembers());
 
             logger.info("Inicio de la lectura del archivo");
-            List<Airport> airports = CSVUtils.CSVReadAirports(query.getDout() + "aeropuertos.csv");
-            List<Flight> flights = CSVUtils.CSVReadFlights(query.getDout() + "movimientos.csv");
+            List<Airport> airports = CSVUtils.CSVReadAirports(query.getDout() + "/aeropuertos.csv");
+            List<Flight> flights = CSVUtils.CSVReadFlights(query.getDout() + "/movimientos.csv");
             logger.info("Fin de lectura del archivo");
 
             logger.info("Inicio del trabajo map/reduce");
@@ -102,6 +96,7 @@ public class Query1 {
         JobTracker t = hz.getJobTracker("movPerAirports");
         // primero levantamos todos los aeropuertos que nos interesa para asegurarnos que no no haya colados
         final IMap<String, String> airportsFiltered = hz.getMap("g8-q1-airportsFiltered");
+        airportsFiltered.clear();
         airportsFiltered.putAll(airports
                 .stream()
                 .filter(a -> a.getOaci() != null && !a.getOaci().equals(""))
@@ -109,6 +104,7 @@ public class Query1 {
 
         // ahora agregamos al multimap cada movimiento desde el aeropuerto
         final IList<Flight> flightsFiltered = hz.getList("g8-q1-flightsFiltered");
+        flightsFiltered.clear();
         flightsFiltered.addAll(flights.parallelStream()
                 // este filtro lo tengo que hacer de ante mano si o si
                 .filter(f ->
@@ -122,7 +118,7 @@ public class Query1 {
         // whereas the value are the entries of the list, one by one.
         // https://docs.hazelcast.org/docs/3.6.8/javadoc/com/hazelcast/mapreduce/KeyValueSource.html
         final KeyValueSource<String, Flight> source = KeyValueSource.fromList(flightsFiltered);
-        Job<String, Flight> job = t.newJob( source );
+        Job<String, Flight> job = t.newJob(source);
         ICompletableFuture<Map<String, Long>> future = job
                 // no es necesario eliminar las llaves que no esté en airports.csv, pues ya fue hecho
                 // por cada origen y destino del Flight emitimos un 1
@@ -138,9 +134,23 @@ public class Query1 {
         return result.entrySet()
                 .stream()
                 .sorted((o1, o2) -> o1.getValue().equals(o2.getValue()) ?
-                        o1.getKey().compareTo(o2.getKey()):
+                        o1.getKey().compareTo(o2.getKey()) :
                         o2.getValue().compareTo(o1.getValue()))
-                .map(e -> e.getKey() +";"+ airportsFiltered.get(e.getKey()) +";"+ e.getValue())
+                .map(e -> e.getKey() + ";" + airportsFiltered.get(e.getKey()) + ";" + e.getValue() + "\n")
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public void runQuery(HazelcastInstance hz, List<Airport> airports, List<Flight> flights) throws ExecutionException, InterruptedException {
+        try {
+            CSVUtils.CSVWrite(Paths.get(this.getDout() + "/query1.csv"),
+                    movPerAirPorts(hz, airports, flights),
+                    "OACI;Denominación;Movimientos\n",
+                    e -> e
+            );
+        } catch (IOException e) {
+            System.err.println("Error while writing results on file");
+            System.exit(1);
+        }
     }
 }

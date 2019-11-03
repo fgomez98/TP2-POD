@@ -1,4 +1,4 @@
 #!/bin/bash
 
-java  -cp 'lib/jars/*' "pailor.com.server.Server" $*
+java  -cp 'lib/jars/*' "tpe2.server.Server" $*
 

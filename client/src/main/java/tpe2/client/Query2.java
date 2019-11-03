@@ -8,6 +8,7 @@ import org.kohsuke.args4j.Option;
 import tpe2.api.CSVUtils;
 import tpe2.api.Collators.Query2Collator;
 import tpe2.api.Combiners.SimpleChunkCombinerFactory;
+import tpe2.api.Model.Airport;
 import tpe2.api.Model.Flight;
 import tpe2.api.Mappers.Query2Mapper;
 import tpe2.api.Model.Tuple;
@@ -18,29 +19,16 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
-public class Query2 {
+public class Query2 implements Query {
 
-    @Option(name = "-Dn", aliases = "--n", usage = "number of top airlines", required = true)
     private int n;
 
-    private String[] ips;
+    private List<String> ips;
 
-    @Option(name = "-Daddresses", aliases = "--ipAddresses",
-            usage = "one or more ip directions and ports"/*, required = true*/)
-    private void setIps(String s) throws CmdLineException {
-        ips = s.split(";");
-        for (String ip : ips) {
-            if (!ip.matches("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}):(\\d{1,5})")) {
-                throw new CmdLineException("Invalid ip and port address");
-            }
-        }
-    }
-
-    @Option(name = "-DinPath", aliases = "--inPath", usage = "input directory path", required = true)
     private String dir;
 
-    @Option(name = "-DoutPath", aliases = "--outPath", usage = "Output path where .txt and .csv are")
     private String output;
 
     public int getN() {
@@ -51,7 +39,7 @@ public class Query2 {
         this.n = n;
     }
 
-    public String[] getIps() {
+    public List<String> getIps() {
         return ips;
     }
 
@@ -71,6 +59,15 @@ public class Query2 {
         this.output = output;
     }
 
+    public Query2(int n, List<String> ips, String dir, String output) {
+        this.n = n;
+        this.ips = ips;
+        this.dir = dir;
+        this.output = output;
+    }
+
+    public Query2() {
+    }
 
     public static void main(String[] args) {
         Query2 query2 = new Query2();
@@ -81,7 +78,7 @@ public class Query2 {
             System.exit(1);
         }
 
-        Logger logger = Helpers.createLoggerFor("Query2", query2.getOutput()+"query2.txt");
+        Logger logger = Helpers.createLoggerFor("Query2", query2.getOutput() + "query2.txt");
 
         List<Flight> flightList = new ArrayList<>();
         try {
@@ -118,9 +115,9 @@ public class Query2 {
             List<String> list = new ArrayList<>();
             list.add("Aerolinea;Porcentaje\n");
             result.forEach((k) -> {
-                        DecimalFormat numberFormat = new DecimalFormat("#.00");
-                        list.add(k.getaVal() + ";" + numberFormat.format(k.getbVal()) + "%\n");
-                    });
+                DecimalFormat numberFormat = new DecimalFormat("#.00");
+                list.add(k.getaVal() + ";" + numberFormat.format(k.getbVal()) + "%\n");
+            });
             Files.write(Paths.get(query2.getOutput() + "query2.csv"), list);
             System.out.println("done");
         } catch (Exception e) {
@@ -131,5 +128,37 @@ public class Query2 {
 
     }
 
+    @Override
+    public void runQuery(HazelcastInstance hazel, List<Airport> airports, List<Flight> flightList) throws ExecutionException, InterruptedException {
+        JobTracker jobTracker = hazel.getJobTracker("top-" + this.getN() + "-airlines");
 
+        IList<Flight> iList = hazel.getList("top-airlines");
+        iList.clear();
+        iList.addAll(flightList);
+
+        Job<String, Flight> job = jobTracker.newJob(KeyValueSource.fromList(iList));
+        ICompletableFuture<List<Tuple<String, Double>>> future = job
+                .mapper(new Query2Mapper())
+                .combiner(new SimpleChunkCombinerFactory())
+                .reducer(new SimpleReducerFactory())
+                .submit(new Query2Collator(this.getN()));
+
+        try {
+            List<Tuple<String, Double>> result = future.get();
+
+            List<String> list = new ArrayList<>();
+            list.add("Aerolinea;Porcentaje\n");
+
+            CSVUtils.CSVWrite(Paths.get(this.getOutput() + "/query2.csv"),
+                    result,
+                    "Aerolínea;Porcentaje\n",
+                    (e) -> {
+                        DecimalFormat numberFormat = new DecimalFormat("#.00");
+                        return e.getaVal() + ";" + numberFormat.format(e.getbVal()) + "%\n";
+                    });
+        } catch (Exception e) {
+            System.err.println("Error while writing results on file");
+            System.exit(1);
+        }
+    }
 }

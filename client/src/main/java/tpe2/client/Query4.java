@@ -1,13 +1,12 @@
 package tpe2.client;
 
-import ch.qos.logback.classic.Logger;
 import com.hazelcast.core.*;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
-import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 import tpe2.api.Combiners.SimpleChunkCombinerFactory;
+import tpe2.api.Model.Airport;
 import tpe2.api.Model.Flight;
 import tpe2.api.Collators.Query4Collator;
 import tpe2.api.Mappers.Query4Mapper;
@@ -15,20 +14,12 @@ import tpe2.api.Reducers.SimpleReducerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-import static tpe2.api.CSVUtils.CSVReadFlights;
-
-public class Query4 {
-
-    private String[] ips;
+public class Query4 implements Query {
 
     @Option(name = "-DinPath", aliases = "--inPath", usage = "input directory path", required = true)
     private String dir;
@@ -40,21 +31,11 @@ public class Query4 {
     private String originOaci;
 
     @Option(name = "-Dn", usage = "Number of results")
-    private String resultsAmonut;
+    private int resultsAmonut;
 
-    @Option(name = "-Daddresses", aliases = "--ipAddresses",
-            usage = "one or more ip directions and ports"/*, required = true*/)
-    private void setIps(String s) throws CmdLineException {
-        String[] ips = s.split(",");
-        for (String ip : ips) {
-            if (!ip.matches("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}):(\\d{1,5})")) {
-                throw new CmdLineException("Invalid ip and port address");
-            }
-        }
-        this.ips = ips;
-    }
+    private List<String> ips;
 
-    public String[] getIps() {
+    public List<String> getIps() {
         return ips;
     }
 
@@ -70,41 +51,25 @@ public class Query4 {
         return originOaci;
     }
 
-    public String getResultsAmonut() {
+    public int getResultsAmonut() {
         return resultsAmonut;
     }
 
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
-        Query4 query = new Query4();
+    public Query4(List<String> ips, String dir, String output, String originOaci, int resultsAmonut) {
+        this.ips = ips;
+        this.dir = dir;
+        this.output = output;
+        this.originOaci = originOaci;
+        this.resultsAmonut = resultsAmonut;
+    }
 
-        try {
-            CmdParserUtils.init(args, query);
-        } catch (IOException e) {
-            System.out.println("There was a problem reading the arguments");
-            System.exit(1);
-        }
-
-        Logger logger = Helpers.createLoggerFor("Query4", query.getOutput()+"query4.txt");
-
-        List<Flight> flights = new ArrayList<>();
-        try {
-            logger.info("Inicio de la lectura del archivo");
-            flights = CSVReadFlights(query.getDir() + "/movimientos.csv");
-            logger.info("Fin de lectura del archivo");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        HazelcastInstance hz = Hazelcast.newHazelcastInstance();
-
-        logger.info("Inicio del trabajo map/reduce");
-
+    @Override
+    public void runQuery(HazelcastInstance hz, List<Airport> airports, List<Flight> flights) throws ExecutionException, InterruptedException {
         final JobTracker jobTracker = hz.getJobTracker("query-4-job");
 
         flights = flights.stream()
-                .filter(a -> a.getOaciOrigin().equals(query.originOaci))
+                .filter(a -> a.getOaciOrigin().equals(this.originOaci))
                 .collect(Collectors.toList());
-
 
         final IList<Flight> dataList = hz.getList("MOVEMENTS_MAP");
         dataList.clear();
@@ -116,7 +81,7 @@ public class Query4 {
                 .mapper(new Query4Mapper())
                 .combiner(new SimpleChunkCombinerFactory())
                 .reducer(new SimpleReducerFactory())
-                .submit(new Query4Collator(Integer.valueOf(query.resultsAmonut)));
+                .submit(new Query4Collator(this.resultsAmonut));
 
         Map<String, Long> movementsMap = future.get();
 
@@ -124,13 +89,12 @@ public class Query4 {
         movementsIMap.clear();
         movementsMap.forEach(movementsIMap::set);
 
-        logger.info("Fin del trabajo map/reduce");
-
-        try (PrintWriter writer = new PrintWriter(new File(query.output + "/query4.csv"))) {
+        try (PrintWriter writer = new PrintWriter(new File(this.getOutput() + "/query4.csv"))) {
+            writer.write("OACI;Despegues\n");
             StringBuilder sb = new StringBuilder();
             Iterator it = movementsMap.entrySet().iterator();
             while (it.hasNext()) {
-                Map.Entry pair = (Map.Entry)it.next();
+                Map.Entry pair = (Map.Entry) it.next();
                 sb.append(pair.getKey());
                 sb.append(";");
                 sb.append(pair.getValue());
@@ -141,8 +105,5 @@ public class Query4 {
         } catch (FileNotFoundException e) {
             System.out.println(e.getMessage());
         }
-
-        System.out.println("Done");
-        System.exit(0);
     }
 }

@@ -2,11 +2,12 @@ package tpe2.client;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
+
 import java.io.IOException;
 
 class CmdParserUtils {
 
-    static void  init(final String[] args, Object o) throws IOException {
+    static void init(final String[] args, Object o) throws IOException {
         final CmdLineParser parser = new CmdLineParser(o);
         if (args.length < 1) {
             parser.printUsage(System.err);
