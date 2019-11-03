@@ -22,7 +22,10 @@ public class CSVUtils {
         String[] nextLine = reader.readNext(); // salteamos al priemra
         List<Airport> resp = new ArrayList<>();
         while ((nextLine = reader.readNext()) != null) {
-            resp.add(new Airport(nextLine[1], nextLine[4], nextLine[21]));
+            // si el campo oaci no es nulo y es distinto de vacio entonces es un aeropuerto valido
+            if (nextLine[1] != null && !nextLine[1].equals("")) {
+                resp.add(new Airport(nextLine[1], nextLine[4], nextLine[21]));
+            }
         }
         return resp;
     }

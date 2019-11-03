@@ -79,11 +79,7 @@ public class Query5 implements Query {
         final KeyValueSource<String, Flight> movementSource = KeyValueSource.fromList(movementsList);
 
         List<String> oacis = new ArrayList<>();
-        airports.forEach((a) -> {
-            if (a.getOaci() != null && !a.getOaci().equals("")) {
-                oacis.add(a.getOaci());
-            }
-        });
+        airports.forEach((a) -> oacis.add(a.getOaci()));
 
         final Job<String, Flight> job = jobTracker.newJob(movementSource);
         final ICompletableFuture<List<Tuple<String, Double>>> future = job

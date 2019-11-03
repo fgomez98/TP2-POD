@@ -129,7 +129,7 @@ public class Client {
             System.exit(1);
         }
 
-        Logger logger = Helpers.createLoggerFor("Query1", client.getDout() + "/query" + client.getQueryNum() + ".txt");
+        Logger logger = Helpers.createLoggerFor("Query" + client.getQueryNum(), client.getDout() + "/query" + client.getQueryNum() + ".txt");
 
         Query query = null;
         //instancio la query
