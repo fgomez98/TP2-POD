@@ -1,9 +1,7 @@
 package tpe2.api.Reducers;
 
-
 import com.hazelcast.mapreduce.Reducer;
 import com.hazelcast.mapreduce.ReducerFactory;
-
 
 public class SimpleReducerFactory implements ReducerFactory<String, Long, Long> {
 

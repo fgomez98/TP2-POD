@@ -1,6 +1,5 @@
 package tpe2.api.Collators;
 
-
 import com.hazelcast.mapreduce.Collator;
 import tpe2.api.Model.Tuple;
 
@@ -22,7 +21,7 @@ public class Query2Collator implements Collator<Map.Entry<String, Long>, List<Tu
         List<Tuple<String, Long>> list = new ArrayList<>();
         values.forEach((entry) -> {
             counter.addAndGet(entry.getValue());
-            list.add(new Tuple<>(entry.getKey(),entry.getValue()));
+            list.add(new Tuple<>(entry.getKey(), entry.getValue()));
         });
         list.sort((o1, o2) -> (int) (o2.getbVal() - o1.getbVal()));
         double pctg = 0;
@@ -31,8 +30,8 @@ public class Query2Collator implements Collator<Map.Entry<String, Long>, List<Tu
                 double value = 100.0 * list.get(i).getbVal() / counter.longValue();
                 pctg += value;
                 ret.add(new Tuple<>(list.get(i).getaVal(), value));
-            }else{
-                n+=1;
+            } else {
+                n += 1;
             }
         }
         ret.add(new Tuple<>("Otros", (100.0 - pctg) >= 0 ? 100.0 - pctg : 0));

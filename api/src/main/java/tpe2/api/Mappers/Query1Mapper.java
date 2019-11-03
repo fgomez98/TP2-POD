@@ -6,6 +6,7 @@ import tpe2.api.Model.Flight;
 
 public class Query1Mapper implements Mapper<String, Flight, String, Long> {
     private static final Long ONE = 1L;
+
     @Override
     public void map(String key, Flight flight, Context<String, Long> context) {
         switch (flight.getTypeOfMovement()) {

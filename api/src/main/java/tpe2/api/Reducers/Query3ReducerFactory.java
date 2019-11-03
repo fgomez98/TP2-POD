@@ -43,12 +43,12 @@ public class Query3ReducerFactory implements ReducerFactory<Long, String, List<T
             }
             // ordenamos alfabeticamente los pares de oaci
             list.sort((t1, t2) -> {
-                    if (t1.getaVal().compareTo(t2.getaVal()) == 0) { // primer oaci es igual entonces comparamos con el segundo
-                        return t1.getbVal().compareTo(t2.getbVal());
-                    } else {
-                        return t1.getaVal().compareTo(t2.getaVal());
+                        if (t1.getaVal().compareTo(t2.getaVal()) == 0) { // primer oaci es igual entonces comparamos con el segundo
+                            return t1.getbVal().compareTo(t2.getbVal());
+                        } else {
+                            return t1.getaVal().compareTo(t2.getaVal());
+                        }
                     }
-                }
             );
             return list;
         }

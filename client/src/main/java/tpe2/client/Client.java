@@ -122,6 +122,7 @@ public class Client {
 
         try {
             CmdParserUtils.init(args, client);
+            CmdParserUtils.checkUsage(client);
         } catch (IOException e) {
             System.out.println("There was a problem reading the arguments");
             System.exit(1);

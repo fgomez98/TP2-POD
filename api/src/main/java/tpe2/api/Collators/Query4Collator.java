@@ -22,9 +22,9 @@ public class Query4Collator implements Collator<Map.Entry<String, Long>, Map<Str
         values.forEach(entryList::add);
         entryList.sort((e1, e2) -> Long.compare(e2.getValue(), e1.getValue()));
 
-        return entryList.subList(0,n).stream().collect(Collectors.toMap(Map.Entry::getKey,
+        return entryList.subList(0, n).stream().collect(Collectors.toMap(Map.Entry::getKey,
                 Map.Entry::getValue,
-                (v1,v2)->v1,
+                (v1, v2) -> v1,
                 LinkedHashMap::new));
     }
 }

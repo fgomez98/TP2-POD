@@ -19,7 +19,7 @@ public class CSVUtils {
 
     public static List<Airport> CSVReadAirports(String path) throws Exception {
         CSVReader reader = new CSVReader(new FileReader(path), ';');
-        String [] nextLine = reader.readNext(); // salteamos al priemra
+        String[] nextLine = reader.readNext(); // salteamos al priemra
         List<Airport> resp = new ArrayList<>();
         while ((nextLine = reader.readNext()) != null) {
             resp.add(new Airport(nextLine[1], nextLine[4], nextLine[21]));
@@ -29,7 +29,7 @@ public class CSVUtils {
 
     public static List<Flight> CSVReadFlights(String path) throws Exception {
         CSVReader reader = new CSVReader(new FileReader(path), ';');
-        String [] nextLine = reader.readNext(); // salteamos al priemra
+        String[] nextLine = reader.readNext(); // salteamos al priemra
         List<Flight> resp = new ArrayList<>();
         while ((nextLine = reader.readNext()) != null) {
             resp.add(new Flight(nextLine[2], nextLine[3], nextLine[4], nextLine[5], nextLine[6], nextLine[7]));
@@ -37,7 +37,7 @@ public class CSVUtils {
         return resp;
     }
 
-    public static<K> void CSVWrite(Path path, Collection<K> data, String headers, Function<K, String> toCsvRow) throws IOException {
+    public static <K> void CSVWrite(Path path, Collection<K> data, String headers, Function<K, String> toCsvRow) throws IOException {
         Writer writer = new FileWriter(path.toString());
         writer.write(headers);
         for (K row : data) {
@@ -46,7 +46,7 @@ public class CSVUtils {
         writer.close();
     }
 
-    public static<K> void CSVWrite(String path, Collection<K> data, String headers, Function<K, String> toCsvRow) throws IOException {
+    public static <K> void CSVWrite(String path, Collection<K> data, String headers, Function<K, String> toCsvRow) throws IOException {
         CSVWrite(Paths.get(path), data, headers, toCsvRow);
     }
 

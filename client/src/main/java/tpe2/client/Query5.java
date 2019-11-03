@@ -15,6 +15,7 @@ import tpe2.api.Reducers.Query5ReducerFactory;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -94,10 +95,11 @@ public class Query5 implements Query {
         List<Tuple<String, Double>> result = future.get();
 
         try {
+            DecimalFormat numberFormat = new DecimalFormat("##0.00");
             CSVUtils.CSVWrite(Paths.get(this.getOutput() + "/query5.csv"),
                     result,
                     "OACI;Porcentaje\n",
-                    tuple -> tuple.getaVal() + ";" + tuple.getbVal() + "%\n"
+                    tuple -> tuple.getaVal() + ";" + numberFormat.format(tuple.getbVal()) + "%\n"
             );
         } catch (IOException e) {
             System.err.println("Error while writing results on file");

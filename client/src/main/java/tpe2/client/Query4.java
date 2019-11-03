@@ -88,7 +88,7 @@ public class Query4 implements Query {
             CSVUtils.CSVWrite(Paths.get(this.getOutput() + "/query4.csv"),
                     movementsMap.entrySet(),
                     "OACI;Despegues\n",
-                    e -> e.getKey() + ":" + e.getValue() + "\n"
+                    e -> e.getKey() + ";" + e.getValue() + "\n"
             );
         } catch (IOException e) {
             System.err.println("Error while writing results on file");

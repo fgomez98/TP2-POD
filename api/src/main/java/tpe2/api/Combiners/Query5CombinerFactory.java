@@ -11,6 +11,7 @@ public class Query5CombinerFactory implements CombinerFactory<String, Long, Tupl
     public Combiner<Long, Tuple<Long, Long>> newCombiner(String s) {
         return new Q5CountCombiner();
     }
+
     class Q5CountCombiner extends Combiner<Long, Tuple<Long, Long>> {
 
         private long totalCount;
