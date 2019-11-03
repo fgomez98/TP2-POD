@@ -46,6 +46,9 @@ public class Client {
 
     @Option(name = "-Daddresses", aliases = "--ipAddresses", usage = "one or more ip directions and ports", required = true)
     private void setIps(String s) throws CmdLineException {
+        if (s.startsWith("'") && s.endsWith("'")) {
+            s = s.substring(1, s.length()-1);
+        }
         List<String> list = Arrays.asList(s.split(";"));
         for (String ip : list) {
             if (!ip.matches("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}):(\\d{1,5})")) {
@@ -130,7 +133,7 @@ public class Client {
             System.exit(1);
         }
 
-        Logger logger = Helpers.createLoggerFor("Query" + client.getQueryNum(), client.getDout() + "/query" + client.getQueryNum() + ".txt");
+        Logger logger = Helpers.createLoggerFor("Client", client.getDout() + "/query" + client.getQueryNum() + ".txt");
 
         Query query = null;
         //instancio la query
