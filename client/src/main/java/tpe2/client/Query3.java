@@ -9,6 +9,7 @@ import tpe2.api.Collators.Query3Collator;
 import tpe2.api.Combiners.SimpleChunkCombinerFactory;
 import tpe2.api.Mappers.Query3Mapper;
 import tpe2.api.Mappers.Query1Mapper;
+import tpe2.api.Mappers.Query3MovementMapper;
 import tpe2.api.Model.Airport;
 import tpe2.api.Reducers.Query3ReducerFactory;
 import tpe2.api.Reducers.SimpleReducerFactory;
@@ -74,7 +75,7 @@ public class Query3 implements Query {
         final KeyValueSource<String, Flight> source = KeyValueSource.fromList(dataList);
         final Job<String, Flight> job = jobTracker.newJob(source);
         final ICompletableFuture<Map<String, Long>> future = job
-                .mapper(new Query1Mapper())
+                .mapper(new Query3MovementMapper())
                 .combiner(new SimpleChunkCombinerFactory())
                 .reducer(new SimpleReducerFactory())
                 .submit();
