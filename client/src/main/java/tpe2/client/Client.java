@@ -13,6 +13,7 @@ import tpe2.api.Model.Airport;
 import tpe2.api.Model.Flight;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -170,16 +171,16 @@ public class Client {
 
         logger.info("Inicio de la lectura del archivo");
 
-        List<Airport> airports = null;
-        List<Flight> flights = null;
+        List<Airport> airports = new ArrayList<>();
+        List<Flight> flights = new ArrayList<>();
         try {
             /*
             Solamente utilizan los aeropuertos las queries 1, 5, 6
              */
             if (client.getQueryNum() == 1 || client.getQueryNum() == 5 || client.getQueryNum() == 6) {
-                airports = CSVUtils.CSVReadAirports(client.getDout() + "/aeropuertos.csv");
+                airports = CSVUtils.CSVReadAirports(client.getDin() + "/aeropuertos.csv");
             }
-            flights = CSVUtils.CSVReadFlights(client.getDout() + "/movimientos.csv");
+            flights = CSVUtils.CSVReadFlights(client.getDin() + "/movimientos.csv");
         } catch (Exception ex) {
             System.out.println("There was a conflict while reading the .csv files");
             System.exit(1);
