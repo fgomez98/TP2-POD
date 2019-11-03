@@ -185,7 +185,7 @@ public class Client {
             }
             flights = CSVUtils.CSVReadFlights(client.getDin() + "/movimientos.csv");
         } catch (Exception ex) {
-            System.out.println("There was a conflict while reading the .csv files");
+            System.err.println("There was a conflict while reading the .csv files");
             System.exit(1);
         }
 
@@ -196,13 +196,12 @@ public class Client {
         try {
             query.runQuery(hz, airports, flights);
         } catch (ExecutionException | InterruptedException ex) {
-            System.out.println("There was a conflict while executing the query");
+            System.err.println("There was a conflict while executing the query");
+            System.out.println(ex.getMessage());
             System.exit(1);
         }
 
         logger.info("Fin del trabajo map/reduce");
-
-        System.out.println("done");
         System.exit(0);
     }
 }
