@@ -61,7 +61,6 @@ public class Query6 implements Query {
         // primero levantamos todos los aeropuertos que nos interesa para asegurarnos que no no haya colados
         final Map<String, String> airportsFiltered = new HashMap<>(airports
                 .parallelStream()
-                .filter(a -> a.getOaci() != null && !a.getOaci().equals(""))
                 .collect(Collectors.toConcurrentMap(Airport::getOaci, Airport::getProvince)));
 
         // ahora agregamos al multimap cada movimiento desde el aeropuerto
@@ -72,7 +71,7 @@ public class Query6 implements Query {
                         && airportsFiltered.containsKey(f.getOaciOrigin())
                         && airportsFiltered.containsKey(f.getOaciDestination())
                 )
-                //peek() can be useful in another scenario:
+                // peek() can be useful in another scenario:
                 // when we want to alter the inner state of an element.
                 .peek(f -> {
                     f.setOaciOrigin(airportsFiltered.get(f.getOaciOrigin()));
@@ -85,7 +84,7 @@ public class Query6 implements Query {
         // https://docs.hazelcast.org/docs/3.6.8/javadoc/com/hazelcast/mapreduce/KeyValueSource.html
         final KeyValueSource<String, Flight> source = KeyValueSource.fromList(flightsFiltered);
         Job<String, Flight> job = t.newJob(source);
-        ICompletableFuture<Map<String, Long>> future = job
+        ICompletableFuture<List<String>> future = job
                 // por cada origen y destino del Flight emitimos un 1 apra la llame origen;destino o destino;origen según orden
                 .mapper(new Query6Mapper())
                 // antes de emitir la llave por la red "reducimos" localmente para minimizar los datos que se envian por la red
@@ -96,18 +95,16 @@ public class Query6 implements Query {
                 .submit(iterable ->
                         StreamSupport.stream(iterable.spliterator(), false)
                                 .filter(e -> e.getValue().compareTo(min) >= 0)
-                                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+                                .sorted((o1, o2) -> o1.getValue().equals(o2.getValue()) ?
+                                        o1.getKey().compareTo(o2.getKey()) :
+                                        o2.getValue().compareTo(o1.getValue()))
+                                .map(e -> e.getKey() + ";" + e.getValue() + "\n")
+                                .collect(Collectors.toList())
                 );
 
         // Wait and retrieve the result
-        Map<String, Long> result = future.get();
-        return result.entrySet()
-                .stream()
-                .sorted((o1, o2) -> o1.getValue().equals(o2.getValue()) ?
-                        o1.getKey().compareTo(o2.getKey()) :
-                        o2.getValue().compareTo(o1.getValue()))
-                .map(e -> e.getKey() + ";" + e.getValue() + "\n")
-                .collect(Collectors.toList());
+        List<String> result = future.get();
+        return result;
     }
 
     @Override
