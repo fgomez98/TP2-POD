@@ -15,6 +15,7 @@ import tpe2.api.Model.Flight;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class Client {
 
@@ -124,7 +125,7 @@ public class Client {
             CmdParserUtils.init(args, client);
             CmdParserUtils.checkUsage(client);
         } catch (IOException e) {
-            System.out.println("There was a problem reading the arguments");
+            System.out.println("There was a conflict with arguments");
             System.exit(1);
         }
 
@@ -157,43 +158,47 @@ public class Client {
                 break;
         }
 
+        ClientConfig cfg = new ClientConfig();
+        GroupConfig groupConfig = cfg.getGroupConfig();
+        groupConfig.setName("tpe2-g8");
+        groupConfig.setPassword("holamundo");
+        ClientNetworkConfig clientNetworkConfig = cfg.getNetworkConfig();
+        client.getIps().forEach(clientNetworkConfig::addAddress);
+
+        HazelcastInstance hz = HazelcastClient.newHazelcastClient(cfg);
+        System.out.println("Members: " + hz.getCluster().getMembers());
+
+        logger.info("Inicio de la lectura del archivo");
+
+        List<Airport> airports = null;
+        List<Flight> flights = null;
         try {
-            ClientConfig cfg = new ClientConfig();
-            GroupConfig groupConfig = cfg.getGroupConfig();
-            groupConfig.setName("tpe2-g8");
-            groupConfig.setPassword("holamundo");
-            ClientNetworkConfig clientNetworkConfig = cfg.getNetworkConfig();
-            client.getIps().forEach(clientNetworkConfig::addAddress);
-
-            HazelcastInstance hz = HazelcastClient.newHazelcastClient(cfg);
-            System.out.println("Members: " + hz.getCluster().getMembers());
-
-            logger.info("Inicio de la lectura del archivo");
-
             /*
             Solamente utilizan los aeropuertos las queries 1, 5, 6
              */
-            List<Airport> airports = null;
             if (client.getQueryNum() == 1 || client.getQueryNum() == 5 || client.getQueryNum() == 6) {
                 airports = CSVUtils.CSVReadAirports(client.getDout() + "/aeropuertos.csv");
             }
-
-            List<Flight> flights = CSVUtils.CSVReadFlights(client.getDout() + "/movimientos.csv");
-
-            logger.info("Fin de lectura del archivo");
-
-            logger.info("Inicio del trabajo map/reduce");
-
-            query.runQuery(hz, airports, flights);
-
-            logger.info("Fin del trabajo map/reduce");
-        } catch (Exception e) {
-            e.printStackTrace();
+            flights = CSVUtils.CSVReadFlights(client.getDout() + "/movimientos.csv");
+        } catch (Exception ex) {
+            System.out.println("There was a conflict while reading the .csv files");
             System.exit(1);
         }
+
+        logger.info("Fin de lectura del archivo");
+
+        logger.info("Inicio del trabajo map/reduce");
+
+        try {
+            query.runQuery(hz, airports, flights);
+        } catch (ExecutionException | InterruptedException ex) {
+            System.out.println("There was a conflict while executing the query");
+            System.exit(1);
+        }
+
+        logger.info("Fin del trabajo map/reduce");
 
         System.out.println("done");
         System.exit(0);
     }
-
 }
