@@ -1,12 +1,9 @@
 package tpe2.client;
 
-import ch.qos.logback.classic.Logger;
 import com.hazelcast.core.*;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.Option;
 import tpe2.api.Model.Airport;
 import tpe2.api.CSVUtils;
 import tpe2.api.Model.Flight;
@@ -17,11 +14,8 @@ import tpe2.api.Mappers.Query5Mapper;
 import tpe2.api.Reducers.Query5ReducerFactory;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 

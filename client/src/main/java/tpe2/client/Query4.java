@@ -4,7 +4,7 @@ import com.hazelcast.core.*;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
-import org.kohsuke.args4j.Option;
+import tpe2.api.CSVUtils;
 import tpe2.api.Combiners.SimpleChunkCombinerFactory;
 import tpe2.api.Model.Airport;
 import tpe2.api.Model.Flight;
@@ -12,25 +12,20 @@ import tpe2.api.Collators.Query4Collator;
 import tpe2.api.Mappers.Query4Mapper;
 import tpe2.api.Reducers.SimpleReducerFactory;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 public class Query4 implements Query {
 
-    @Option(name = "-DinPath", aliases = "--inPath", usage = "input directory path", required = true)
     private String dir;
 
-    @Option(name = "-DoutPath", aliases = "--outPath", usage = "Output path where .txt and .csv are")
     private String output;
 
-    @Option(name = "-Doaci", usage = "Origin airport")
     private String originOaci;
 
-    @Option(name = "-Dn", usage = "Number of results")
     private int resultsAmonut;
 
     private List<String> ips;
@@ -89,21 +84,15 @@ public class Query4 implements Query {
         movementsIMap.clear();
         movementsMap.forEach(movementsIMap::set);
 
-        try (PrintWriter writer = new PrintWriter(new File(this.getOutput() + "/query4.csv"))) {
-            writer.write("OACI;Despegues\n");
-            StringBuilder sb = new StringBuilder();
-            Iterator it = movementsMap.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry pair = (Map.Entry) it.next();
-                sb.append(pair.getKey());
-                sb.append(";");
-                sb.append(pair.getValue());
-                sb.append('\n');
-                it.remove(); // avoids a ConcurrentModificationException
-            }
-            writer.write(sb.toString());
-        } catch (FileNotFoundException e) {
-            System.out.println(e.getMessage());
+        try {
+            CSVUtils.CSVWrite(Paths.get(this.getOutput() + "/query4.csv"),
+                    movementsMap.entrySet(),
+                    "OACI;Despegues\n",
+                    e -> e.getKey() + ":" + e.getValue() + "\n"
+            );
+        } catch (IOException e) {
+            System.err.println("Error while writing results on file");
+            System.exit(1);
         }
     }
 }
