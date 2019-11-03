@@ -80,11 +80,10 @@ public class Query2 implements Query {
         List<Tuple<String, Double>> result = future.get();
 
         try {
-            DecimalFormat numberFormat = new DecimalFormat("##0.00");
             CSVUtils.CSVWrite(Paths.get(this.getOutput() + "/query2.csv"),
                     result,
                     "Aerolínea;Porcentaje\n",
-                    (e) -> e.getaVal() + ";" + numberFormat.format(e.getbVal()) + "%\n"
+                    (e) -> e.getaVal() + ";" + String.format("%.2f",Math.floor(e.getbVal() * 100)/100.0) + "%\n"
             );
         } catch (IOException e) {
             System.err.println("Error while writing results on file");
