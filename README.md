@@ -7,21 +7,22 @@
 ## Ejecucion
 1. Una vez compilado situarse en las carpetas target de *client* y *server*.
 2. Con el comando **tar -xzf** descomprimir los archivos: *tpe2-g8-client-1.0-SNAPSHOT-bin.tar* y *tpe2-g8-server-1.0-SNAPSHOT-bin.tar*.
-Situados en sus respectivas carpetas. 
-3. Situarse en la carpeta descomprimida.
-4. Ejecutar el comando **chmod u+x** sobre los scripts *queryX.sh* y *run-server.sh* para otorgarles permiso de ejecuccion.
+Situados en sus respectivas carpetas.
+     ```
+    tar -xzf ./client/target/tpe2-g8-client-1.0-SNAPSHOT-bin.tar.gz
+    tar -xzf ./server/target/tpe2-g8-server-1.0-SNAPSHOT-bin.tar.gz
+    ```
+3. Ejecutar el comando **chmod u+x** sobre los scripts *queryX.sh* y *run-server.sh* para otorgarles permiso de ejecuccion.
 Puede utilizar el script *run-Permits.sh* el cual le otorgara permisos a todos los demas scripts.
     
     ```
-    tar -xzf ./client/target/tpe2-g8-client-1.0-SNAPSHOT-bin.tar.gz
-    tar -xzf ./server/target/tpe2-g8-server-1.0-SNAPSHOT-bin.tar.gz
     chmod u+x ./tpe2-g8-server-1.0-SNAPSHOT/run-server.sh 
     chmod u+x ./tpe2-g8-client-1.0-SNAPSHOT/run-Permits.sh
     cd ./tpe2-g8-client-1.0-SNAPSHOT
     ./run-Permits.sh
     ```
     
-5. Por último copiamos los archivos csv a la raíz del cliente.
+4. Por último copiamos los archivos csv a la raíz del cliente.
 
     ```
     cp aeropuertos.csv tpe2-g8-client-1.0-SNAPSHOT
