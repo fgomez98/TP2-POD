@@ -22,13 +22,6 @@ Puede utilizar el script *run-Permits.sh* el cual le otorgara permisos a todos l
     ./run-Permits.sh
     ```
     
-4. Por último copiamos los archivos csv a la raíz del cliente.
-
-    ```
-    cp aeropuertos.csv tpe2-g8-client-1.0-SNAPSHOT
-    cp movimientos.csv tpe2-g8-client-1.0-SNAPSHOT
-    ```
-    
     ### Disponibilizar el servidor
     - Correr el script **run-server.sh**.
     ```
