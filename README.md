@@ -15,15 +15,17 @@ Puede utilizar el script *run-Permits.sh* el cual le otorgara permisos a todos l
     ```
     tar -xzf ./client/target/tpe2-g8-client-1.0-SNAPSHOT-bin.tar.gz
     tar -xzf ./server/target/tpe2-g8-server-1.0-SNAPSHOT-bin.tar.gz
-    chmod u+x ./client/target/tpe2-g8-client-1.0-SNAPSHOT/run-Permits.sh
-    ./client/target/tpe2-g8-client-1.0-SNAPSHOT/run-Permits.sh
-    chmod u+x ./server/target/tpe2-g8-server-1.0-SNAPSHOT/run-server.sh 
+    chmod u+x ./tpe2-g8-server-1.0-SNAPSHOT/run-server.sh 
+    chmod u+x ./tpe2-g8-client-1.0-SNAPSHOT/run-Permits.sh
+    cd ./tpe2-g8-client-1.0-SNAPSHOT
+    ./run-Permits.sh
     ```
     
     ### Disponibilizar el servidor
     - Correr el script **run-server.sh**.
     ```
-    ./server/target/tpe2-g8-server-1.0-SNAPSHOT/run-server.sh
+    cd ./tpe2-g8-server-1.0-SNAPSHOT
+    ./run-server.sh
     ``` 
     ### Clientes de query
     - Para realizar la consulta 1, correr el script **query1.sh**.
